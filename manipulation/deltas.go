@@ -1,6 +1,7 @@
 package manipulation
 
 import (
+	"fmt"
 	"strings"
 	"time"
 	"wlog/list"
@@ -8,10 +9,18 @@ import (
 )
 
 func IsSameDay(a time.Time, b time.Time) bool {
-	return a.Truncate(24*time.Hour) == b.Truncate(24*time.Hour)
+	return GetDay(a) == GetDay(b)
 }
 
 type Duration time.Duration
+
+func DurationOf(h, m int) Duration {
+	return Duration(time.Duration(60*h+m) * time.Minute)
+}
+
+func GetDuration(a, b time.Time) Duration {
+	return Duration(b.Sub(a))
+}
 
 func (d Duration) Hours() int {
 	duration := time.Duration(d)
@@ -28,6 +37,14 @@ func (d Duration) Minutes() int {
 		panic("more than 24 hours")
 	}
 	return int(minutes) % 60
+}
+
+func (d Duration) Str() string {
+	return fmt.Sprintf("%dh %.2dm", d.Hours(), d.Minutes())
+}
+
+func (d Duration) Add(e Duration) Duration {
+	return Duration(int64(d) + int64(e))
 }
 
 type Delta struct {

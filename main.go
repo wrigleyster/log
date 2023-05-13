@@ -8,7 +8,9 @@ import (
 	"strings"
 	"time"
 	"wlog/formatter"
+	"wlog/list"
 	"wlog/log"
+	"wlog/manipulation"
 )
 
 func printUsage() {
@@ -25,13 +27,28 @@ func printLog() {
 func printLogDiff() {
 	db := Seed("sqlite.db")
 	entries := db.getLogLines(15)
-	println(formatter.FormatDurations(entries, time.Now()))
+	//	println(formatter.FormatDurations(entries, time.Now()))
+	list.Reverse(entries)
+	println(formatter.FormatTotal(manipulation.Accumulate(entries, time.Now()), formatter.Ascending))
+}
+func warnOrDie(msg string) {
+	print("Warning: " + msg + " Proceed anyway [y/N]: ")
+	var response string
+	_, err := fmt.Scan(&response)
+	util.Log(err)
+	response = strings.ToLower(response)
+	if response != "y" && response != "yes" {
+		os.Exit(1)
+	}
 }
 func add() {
-	println("add")
 	argv := os.Args[1:]
 	db := Seed("sqlite.db")
 	msg := log.Parse(strings.Join(argv, " "))
+	if time.Now().Sub(msg.Time) < 0 {
+		warnOrDie("That event is in the future.")
+	}
+	println("add")
 	if msg.TaskId != "" {
 		task := db.TaskByNameAndExtId(msg.TaskName, msg.TaskId)
 		if task.Exists {

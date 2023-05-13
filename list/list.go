@@ -37,3 +37,14 @@ func Reverse[C any](arr []C) {
 		j--
 	}
 }
+
+func InReverse[T any](lst []T) chan T {
+	element := make(chan T)
+	go func() {
+		for i := len(lst) - 1; 0 <= i; i-- {
+			element <- lst[i]
+		}
+		close(element)
+	}()
+	return element
+}
