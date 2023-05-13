@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"wlog/chrono"
 	"wlog/list"
 	"wlog/log"
 	"wlog/manipulation"
@@ -30,7 +31,7 @@ func Format(entries []log.Entry) string {
 	var lines []string
 	var curDay time.Time
 	for i, entry := range entries {
-		if i == 0 || !manipulation.IsSameDay(curDay, entry.Time) {
+		if i == 0 || !chrono.IsSameDay(curDay, entry.Time) {
 			curDay = entry.Time
 			lines = append(lines, formatDate(curDay))
 		}
@@ -40,7 +41,7 @@ func Format(entries []log.Entry) string {
 	return strings.Join(lines, "\n")
 }
 
-func formatDayTotal(d manipulation.Duration) string {
+func formatDayTotal(d chrono.Duration) string {
 	return fmt.Sprintf(", total: %s", d.Str())
 }
 func formatDay(dayTotal manipulation.DayTotal, order Order) []string {

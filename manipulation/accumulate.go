@@ -5,34 +5,24 @@ import (
 	"os"
 	"strings"
 	"time"
+	"wlog/chrono"
 	"wlog/log"
 )
 
 type Total []DayTotal
-type Day time.Time
-
-func GetDay(t time.Time) Day {
-	return NewDay(t.Year(), t.Month(), t.Day(), t.Location())
-}
-func NewDay(year int, month time.Month, day int, location *time.Location) Day {
-	return Day(time.Date(year, month, day, 0, 0, 0, 0, location))
-}
-func (d Day) AsTime() time.Time {
-	return time.Time(d)
-}
 
 type DayTotal struct {
-	Duration Duration
-	Day      Day
+	Duration chrono.Duration
+	Day      chrono.Day
 	Tasks    []TaskTotal // todo replace with aggregating map
 }
 
 func NewDayTotal(t time.Time) DayTotal {
-	return DayTotal{Day: GetDay(t)}
+	return DayTotal{Day: chrono.GetDay(t)}
 }
 
 type TaskTotal struct {
-	Duration    Duration
+	Duration    chrono.Duration
 	Name, ExtId string
 	IsOpen      bool
 }
@@ -60,7 +50,7 @@ func getTaskTotal(task log.Entry, endTime time.Time, isOpen bool) TaskTotal {
 		isOpen = false
 	}
 	return TaskTotal{
-		GetDuration(task.Time, endTime),
+		chrono.GetDuration(task.Time, endTime),
 		task.TaskName,
 		task.TaskId,
 		isOpen,
@@ -94,7 +84,7 @@ func Accumulate(entries []log.Entry, now time.Time) Total {
 
 		dayTotal.Duration = dayTotal.Duration.Add(task.Duration)
 		dayTotal.Tasks = append(dayTotal.Tasks, task)
-		if GetDay(entry.Time) != GetDay(endTime) {
+		if chrono.GetDay(entry.Time) != chrono.GetDay(endTime) {
 			total = append(total, dayTotal)
 			dayTotal = NewDayTotal(endTime)
 		}

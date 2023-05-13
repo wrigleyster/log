@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+	"wlog/chrono"
 	"wlog/list"
 	"wlog/log"
 	"wlog/manipulation"
@@ -12,9 +13,9 @@ import (
 func TestFormat(t *testing.T) {
 	date := time.Date(2023, 4, 23, 14, 37, 0, 0, time.Local)
 	entries := []log.Entry{
-		{log.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
-		{log.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{log.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
+		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
+		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
+		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
 	}
 	actual := Format(entries)
 
@@ -29,11 +30,11 @@ func TestFormat(t *testing.T) {
 func TestFormatDurations_withEOD(t *testing.T) {
 	date := time.Date(2023, 4, 23, 14, 37, 0, 0, time.Local)
 	entries := []log.Entry{
-		{log.Date(date).At(16, 30), "EOD", ""},
-		{log.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
-		{log.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{log.Date(date).At(11, 31), "lunch", ""},
-		{log.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
+		{chrono.Date(date).At(16, 30), "EOD", ""},
+		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
+		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
+		{chrono.Date(date).At(11, 31), "lunch", ""},
+		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
 	}
 	actual := FormatDurations(entries, time.Now(), Ascending)
 
@@ -49,10 +50,10 @@ func TestFormatDurations_withEOD(t *testing.T) {
 func TestFormatDurations_withoutEOD(t *testing.T) {
 	date := time.Date(2023, 4, 23, 16, 37, 0, 0, time.Local)
 	entries := []log.Entry{
-		{log.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
-		{log.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{log.Date(date).At(11, 31), "lunch", ""},
-		{log.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
+		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
+		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
+		{chrono.Date(date).At(11, 31), "lunch", ""},
+		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
 	}
 	actual := FormatDurations(entries, date, Ascending)
 
@@ -68,11 +69,11 @@ func TestFormatTotal(t *testing.T) {
 	date := time.Date(2023, 4, 23, 14, 37, 0, 0, time.Local)
 	earlier := time.Date(2023, 4, 22, 14, 37, 0, 0, time.Local)
 	entries := []log.Entry{
-		{log.Date(earlier).At(9, 00), "working", "SFFEAT0000001"},
-		{log.Date(earlier).At(17, 00), "eod", ""},
-		{log.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
-		{log.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{log.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
+		{chrono.Date(earlier).At(9, 00), "working", "SFFEAT0000001"},
+		{chrono.Date(earlier).At(17, 00), "eod", ""},
+		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
+		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
+		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
 	}
 	actual := formatTotal(manipulation.Accumulate(entries, date), Ascending)
 
@@ -89,10 +90,10 @@ func TestFormatTotal2(t *testing.T) {
 	date := time.Date(2023, 5, 13, 1, 02, 0, 0, time.Local)
 	earlier := time.Date(2023, 5, 12, 14, 02, 0, 0, time.Local)
 	entries := []log.Entry{
-		{log.Date(date).At(0, 43), "early start", ""},
-		{log.Date(earlier).At(12, 00), "eod", ""},
-		{log.Date(earlier).At(10, 00), "horse riding", ""},
-		{log.Date(earlier).At(9, 30), "dsu", ""},
+		{chrono.Date(date).At(0, 43), "early start", ""},
+		{chrono.Date(earlier).At(12, 00), "eod", ""},
+		{chrono.Date(earlier).At(10, 00), "horse riding", ""},
+		{chrono.Date(earlier).At(9, 30), "dsu", ""},
 	}
 	list.Reverse(entries)
 	actual := formatTotal(manipulation.Accumulate(entries, date), Descending)

@@ -5,25 +5,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"wlog/chrono"
 	"wlog/list"
 )
-
-type Date time.Time
-
-func (date Date) At(h int, m int) time.Time {
-	d := time.Time(date)
-	return time.Date(d.Year(), d.Month(), d.Day(), h, m, 0, 0, d.Location())
-}
-
-func (date Date) On(y int, m int, d int) time.Time {
-	t := time.Time(date)
-	return time.Date(y, time.Month(m), d, t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), t.Location())
-}
-
-func (date Date) As(zone *time.Location) time.Time {
-	d := time.Time(date)
-	return time.Date(d.Year(), d.Month(), d.Day(), d.Hour(), d.Minute(), d.Second(), d.Nanosecond(), zone)
-}
 
 type Entry struct {
 	Time     time.Time
@@ -51,7 +35,7 @@ func (entry Entry) parseTime() Entry {
 		if err != nil {
 			return entry
 		}
-		entry.Time = Date(now).At(hours, minutes)
+		entry.Time = chrono.Date(now).At(hours, minutes)
 		entry.TaskName = strings.Join(list.Sl(words, 0, -2), " ")
 	} else {
 		entry.Time = now
