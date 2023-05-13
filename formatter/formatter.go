@@ -1,12 +1,8 @@
 package formatter
 
 import (
-	"fmt"
 	"strings"
-	"time"
-	"wlog/chrono"
 	"wlog/list"
-	"wlog/log"
 	"wlog/manipulation"
 )
 
@@ -17,69 +13,36 @@ const (
 	Descending
 )
 
-func formatDate(date time.Time) string {
-	return fmt.Sprintf("%s %d %s", date.Weekday().String(), date.Day(), date.Month())
-}
-func formatEntry(entry log.Entry) string {
-	if entry.TaskId == "" {
-		return fmt.Sprintf(" %.2d:%.2d %s", entry.Time.Hour(), entry.Time.Minute(), entry.TaskName)
-	}
-	return fmt.Sprintf(" %.2d:%.2d %s %s", entry.Time.Hour(), entry.Time.Minute(), entry.TaskId, entry.TaskName)
+type View interface {
+	Data() manipulation.Total
+	AddTask(lines []string, task manipulation.TaskTotal) []string
+	FormatDate(dayTotal manipulation.DayTotal) string
+	Format(order Order) string
 }
 
-func Format(entries []log.Entry) string {
+func format(view View, order Order) string {
 	var lines []string
-	var curDay time.Time
-	for i, entry := range entries {
-		if i == 0 || !chrono.IsSameDay(curDay, entry.Time) {
-			curDay = entry.Time
-			lines = append(lines, formatDate(curDay))
+	if order == Ascending {
+		for _, dayTotal := range view.Data() {
+			lines = formatDay(lines, view, dayTotal, order)
 		}
-
-		lines = append(lines, formatEntry(entry))
+	} else {
+		for dayTotal := range list.InReverse(view.Data()) {
+			lines = formatDay(lines, view, dayTotal, Descending)
+		}
 	}
 	return strings.Join(lines, "\n")
 }
-
-func formatDayTotal(d chrono.Duration) string {
-	return fmt.Sprintf(", total: %s", d.Str())
-}
-func formatDay(dayTotal manipulation.DayTotal, order Order) []string {
-	var lines []string
-	lines = append(lines, formatDate(dayTotal.Day.AsTime())+formatDayTotal(dayTotal.Duration))
+func formatDay(lines []string, view View, dayTotal manipulation.DayTotal, order Order) []string {
+	lines = append(lines, view.FormatDate(dayTotal))
 	if order == Ascending {
 		for _, task := range dayTotal.Tasks {
-			if task.IsEOD() {
-				continue
-			}
-			lines = append(lines, task.Str())
+			lines = view.AddTask(lines, task)
 		}
 	} else {
 		for task := range list.InReverse(dayTotal.Tasks) {
-			if task.IsEOD() {
-				continue
-			}
-			lines = append(lines, task.Str())
+			lines = view.AddTask(lines, task)
 		}
 	}
 	return lines
-}
-
-func formatTotal(total manipulation.Total, order Order) string {
-	var lines []string
-	if order == Ascending {
-		for _, dayTotal := range total {
-			lines = append(lines, formatDay(dayTotal, Descending)...)
-		}
-	} else {
-		for dayTotal := range list.InReverse(total) {
-			lines = append(lines, formatDay(dayTotal, Descending)...)
-		}
-	}
-	return strings.Join(lines, "\n")
-}
-
-func FormatDurations(entries []log.Entry, now time.Time, order Order) string {
-	list.Reverse(entries)
-	return formatTotal(manipulation.Accumulate(entries, now), order)
 }

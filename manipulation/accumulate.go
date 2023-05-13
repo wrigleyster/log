@@ -1,7 +1,6 @@
 package manipulation
 
 import (
-	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -22,26 +21,21 @@ func NewDayTotal(t time.Time) DayTotal {
 }
 
 type TaskTotal struct {
+	StartedAt   time.Time
 	Duration    chrono.Duration
 	Name, ExtId string
 	IsOpen      bool
 }
 
-func ternary[C any](predicate bool, t, f C) C {
-	if predicate {
-		return t
-	}
-	return f
-}
-func (t TaskTotal) Str() string {
-	openness := ternary(t.IsOpen, "+", " ")
-	if t.ExtId == "" {
-		return fmt.Sprintf("%s%s %s", openness, t.Duration.Str(), t.Name)
-	}
-	return fmt.Sprintf("%s%s %s %s", openness, t.Duration.Str(), t.ExtId, t.Name)
-}
 func (t TaskTotal) IsEOD() bool {
 	return strings.ToLower(t.Name) == "eod"
+}
+
+func (t TaskTotal) Str() string {
+	if t.ExtId == "" {
+		return t.Name
+	}
+	return t.ExtId + " " + t.Name
 }
 
 func getTaskTotal(task log.Entry, endTime time.Time, isOpen bool) TaskTotal {
@@ -50,6 +44,7 @@ func getTaskTotal(task log.Entry, endTime time.Time, isOpen bool) TaskTotal {
 		isOpen = false
 	}
 	return TaskTotal{
+		task.Time,
 		chrono.GetDuration(task.Time, endTime),
 		task.TaskName,
 		task.TaskId,

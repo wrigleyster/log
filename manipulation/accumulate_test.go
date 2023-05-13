@@ -19,9 +19,9 @@ func TestAccumulateWithoutEOD(t *testing.T) {
 
 	expected := Total([]DayTotal{
 		{chrono.DurationOf(5, 30), chrono.GetDay(date), []TaskTotal{
-			{chrono.DurationOf(2, 30), "Designing the timelogger", "SFFEAT0000001", false},
-			{chrono.DurationOf(2, 30), "Implementing the timelogger", "SFFEAT0000002", false},
-			{chrono.DurationOf(0, 30), "Testing the timelogger", "SFFEAT0000003", true},
+			{chrono.Date(date).At(9, 30), chrono.DurationOf(2, 30), "Designing the timelogger", "SFFEAT0000001", false},
+			{chrono.Date(date).At(12, 00), chrono.DurationOf(2, 30), "Implementing the timelogger", "SFFEAT0000002", false},
+			{chrono.Date(date).At(14, 30), chrono.DurationOf(0, 30), "Testing the timelogger", "SFFEAT0000003", true},
 		}},
 	})
 
@@ -39,10 +39,10 @@ func TestAccumulateWithEOD(t *testing.T) {
 
 	expected := Total([]DayTotal{
 		{chrono.DurationOf(5, 30), chrono.GetDay(date), []TaskTotal{
-			{chrono.DurationOf(2, 30), "Designing the timelogger", "SFFEAT0000001", false},
-			{chrono.DurationOf(2, 30), "Implementing the timelogger", "SFFEAT0000002", false},
-			{chrono.DurationOf(0, 30), "Testing the timelogger", "SFFEAT0000003", false},
-			{chrono.DurationOf(0, 00), "eod", "", false},
+			{chrono.Date(date).At(9, 30), chrono.DurationOf(2, 30), "Designing the timelogger", "SFFEAT0000001", false},
+			{chrono.Date(date).At(12, 00), chrono.DurationOf(2, 30), "Implementing the timelogger", "SFFEAT0000002", false},
+			{chrono.Date(date).At(14, 30), chrono.DurationOf(0, 30), "Testing the timelogger", "SFFEAT0000003", false},
+			{chrono.Date(date).At(15, 00), chrono.DurationOf(0, 00), "eod", "", false},
 		}},
 	})
 
@@ -62,13 +62,13 @@ func TestAccumulateWithEodAndNewDay(t *testing.T) {
 
 	expected := Total([]DayTotal{
 		{chrono.DurationOf(5, 30), chrono.GetDay(yesterday), []TaskTotal{
-			{chrono.DurationOf(2, 30), "Designing the timelogger", "SFFEAT0000001", false},
-			{chrono.DurationOf(2, 30), "Implementing the timelogger", "SFFEAT0000002", false},
-			{chrono.DurationOf(0, 30), "Testing the timelogger", "SFFEAT0000003", false},
-			{chrono.DurationOf(0, 00), "eod", "", false},
+			{chrono.Date(yesterday).At(9, 30), chrono.DurationOf(2, 30), "Designing the timelogger", "SFFEAT0000001", false},
+			{chrono.Date(yesterday).At(12, 00), chrono.DurationOf(2, 30), "Implementing the timelogger", "SFFEAT0000002", false},
+			{chrono.Date(yesterday).At(14, 30), chrono.DurationOf(0, 30), "Testing the timelogger", "SFFEAT0000003", false},
+			{chrono.Date(yesterday).At(15, 00), chrono.DurationOf(0, 00), "eod", "", false},
 		}},
 		{chrono.DurationOf(14, 00), chrono.GetDay(now), []TaskTotal{
-			{chrono.DurationOf(14, 00), "early start", "", true},
+			{chrono.Date(now).At(1, 00), chrono.DurationOf(14, 00), "early start", "", true},
 		}},
 	})
 

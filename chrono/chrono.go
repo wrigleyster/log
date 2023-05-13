@@ -22,6 +22,10 @@ func (date Date) As(zone *time.Location) time.Time {
 	return time.Date(d.Year(), d.Month(), d.Day(), d.Hour(), d.Minute(), d.Second(), d.Nanosecond(), zone)
 }
 
+func (date Date) Time() string {
+	return fmt.Sprintf("%.2d:%.2d", time.Time(date).Hour(), time.Time(date).Minute())
+}
+
 type Day time.Time // todo consolidate Day and Date
 
 func GetDay(t time.Time) Day {
@@ -33,9 +37,9 @@ func NewDay(year int, month time.Month, day int, location *time.Location) Day {
 func (d Day) AsTime() time.Time {
 	return time.Time(d)
 }
-
-func IsSameDay(a time.Time, b time.Time) bool {
-	return GetDay(a) == GetDay(b)
+func (d Day) Str() string {
+	date := time.Time(d)
+	return fmt.Sprintf("%s %d %s", date.Weekday().String(), date.Day(), date.Month())
 }
 
 type Duration time.Duration

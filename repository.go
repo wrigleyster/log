@@ -8,6 +8,7 @@ import (
 	"github.com/wrigleyster/gorm/util"
 	"github.com/wrigleyster/opt"
 	"time"
+	"wlog/list"
 	"wlog/log"
 )
 
@@ -129,6 +130,7 @@ func (repo Repository) getLogLines(count int) []log.Entry {
 			entries = append(entries, entry)
 		}
 	})
+	list.Reverse(entries)
 	return entries
 }
 

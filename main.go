@@ -9,6 +9,7 @@ import (
 	"time"
 	"wlog/formatter"
 	"wlog/log"
+	"wlog/manipulation"
 )
 
 func printUsage() {
@@ -20,12 +21,14 @@ func printLog() {
 	db := Seed("sqlite.db")
 	entries := db.getLogLines(15)
 	fmt.Printf("%d entries:\n", len(entries))
-	println(formatter.Format(entries))
+	view := formatter.AgendaView(manipulation.Accumulate(entries, time.Now()))
+	println(view.Format(formatter.Ascending))
 }
 func printLogDiff() {
 	db := Seed("sqlite.db")
 	entries := db.getLogLines(15)
-	println(formatter.FormatDurations(entries, time.Now(), formatter.Ascending))
+	view := formatter.DurationView(manipulation.Accumulate(entries, time.Now()))
+	println(view.Format(formatter.Ascending))
 }
 func warnOrDie(msg string) {
 	print("Warning: " + msg + " Proceed anyway [y/N]: ")

@@ -10,39 +10,22 @@ import (
 	"wlog/manipulation"
 )
 
-func TestFormat(t *testing.T) {
-	date := time.Date(2023, 4, 23, 14, 37, 0, 0, time.Local)
-	entries := []log.Entry{
-		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
-		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
-	}
-	actual := Format(entries)
-
-	expected := "Sunday 23 April\n" +
-		" 14:30 SFFEAT0000003 Testing the timelogger\n" +
-		" 12:00 SFFEAT0000002 Implementing the timelogger\n" +
-		" 09:30 SFFEAT0000001 Designing the timelogger"
-
-	assert.Equal(t, expected, actual)
-}
-
 func TestFormatDurations_withEOD(t *testing.T) {
 	date := time.Date(2023, 4, 23, 14, 37, 0, 0, time.Local)
 	entries := []log.Entry{
-		{chrono.Date(date).At(16, 30), "EOD", ""},
-		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
-		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{chrono.Date(date).At(11, 31), "lunch", ""},
 		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
+		{chrono.Date(date).At(11, 31), "lunch", ""},
+		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
+		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
+		{chrono.Date(date).At(16, 30), "EOD", ""},
 	}
-	actual := FormatDurations(entries, time.Now(), Ascending)
+	actual := DurationView(manipulation.Accumulate(entries, time.Now())).Format(Ascending)
 
 	expected := "Sunday 23 April, total: 7h 00m\n" +
-		" 2h 00m SFFEAT0000003 Testing the timelogger\n" +
-		" 2h 30m SFFEAT0000002 Implementing the timelogger\n" +
+		" 2h 01m SFFEAT0000001 Designing the timelogger\n" +
 		" 0h 29m lunch\n" +
-		" 2h 01m SFFEAT0000001 Designing the timelogger"
+		" 2h 30m SFFEAT0000002 Implementing the timelogger\n" +
+		" 2h 00m SFFEAT0000003 Testing the timelogger"
 
 	assert.Equal(t, expected, actual)
 }
@@ -50,18 +33,18 @@ func TestFormatDurations_withEOD(t *testing.T) {
 func TestFormatDurations_withoutEOD(t *testing.T) {
 	date := time.Date(2023, 4, 23, 16, 37, 0, 0, time.Local)
 	entries := []log.Entry{
-		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
-		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{chrono.Date(date).At(11, 31), "lunch", ""},
 		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
+		{chrono.Date(date).At(11, 31), "lunch", ""},
+		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
+		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
 	}
-	actual := FormatDurations(entries, date, Ascending)
+	actual := DurationView(manipulation.Accumulate(entries, date)).Format(Ascending)
 
 	expected := "Sunday 23 April, total: 7h 07m\n" +
-		"+2h 07m SFFEAT0000003 Testing the timelogger\n" +
-		" 2h 30m SFFEAT0000002 Implementing the timelogger\n" +
+		" 2h 01m SFFEAT0000001 Designing the timelogger\n" +
 		" 0h 29m lunch\n" +
-		" 2h 01m SFFEAT0000001 Designing the timelogger"
+		" 2h 30m SFFEAT0000002 Implementing the timelogger\n" +
+		"+2h 07m SFFEAT0000003 Testing the timelogger"
 
 	assert.Equal(t, expected, actual)
 }
@@ -75,14 +58,14 @@ func TestFormatTotal(t *testing.T) {
 		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
 		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
 	}
-	actual := formatTotal(manipulation.Accumulate(entries, date), Ascending)
+	actual := DurationView(manipulation.Accumulate(entries, date)).Format(Ascending)
 
 	expected := "Saturday 22 April, total: 8h 00m\n" +
 		" 8h 00m SFFEAT0000001 working\n" +
 		"Sunday 23 April, total: 5h 07m\n" +
-		"+0h 07m SFFEAT0000003 Testing the timelogger\n" +
+		" 2h 30m SFFEAT0000001 Designing the timelogger\n" +
 		" 2h 30m SFFEAT0000002 Implementing the timelogger\n" +
-		" 2h 30m SFFEAT0000001 Designing the timelogger"
+		"+0h 07m SFFEAT0000003 Testing the timelogger"
 
 	assert.Equal(t, expected, actual)
 }
@@ -96,7 +79,7 @@ func TestFormatTotal2(t *testing.T) {
 		{chrono.Date(earlier).At(9, 30), "dsu", ""},
 	}
 	list.Reverse(entries)
-	actual := formatTotal(manipulation.Accumulate(entries, date), Descending)
+	actual := DurationView(manipulation.Accumulate(entries, date)).Format(Descending)
 
 	expected := "Saturday 13 May, total: 0h 19m\n" +
 		"+0h 19m early start\n" +
