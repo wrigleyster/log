@@ -51,17 +51,11 @@ func GetDuration(a, b time.Time) Duration {
 func (d Duration) Hours() int {
 	duration := time.Duration(d)
 	hours := duration.Hours()
-	if hours > 24 {
-		panic("more than 24 hours")
-	}
 	return int(hours)
 }
 func (d Duration) Minutes() int {
 	duration := time.Duration(d)
 	minutes := duration.Minutes()
-	if minutes > 24*60 {
-		panic("more than 24 hours")
-	}
 	return int(minutes) % 60
 }
 
