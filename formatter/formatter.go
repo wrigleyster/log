@@ -48,14 +48,14 @@ func formatDay(dayTotal manipulation.DayTotal, order Order) []string {
 	lines = append(lines, formatDate(dayTotal.Day.AsTime())+formatDayTotal(dayTotal.Duration))
 	if order == Ascending {
 		for _, task := range dayTotal.Tasks {
-			if task.Name == "eod" {
+			if task.IsEOD() {
 				continue
 			}
 			lines = append(lines, task.Str())
 		}
 	} else {
 		for task := range list.InReverse(dayTotal.Tasks) {
-			if task.Name == "eod" {
+			if task.IsEOD() {
 				continue
 			}
 			lines = append(lines, task.Str())
@@ -64,7 +64,7 @@ func formatDay(dayTotal manipulation.DayTotal, order Order) []string {
 	return lines
 }
 
-func FormatTotal(total manipulation.Total, order Order) string {
+func formatTotal(total manipulation.Total, order Order) string {
 	var lines []string
 	if order == Ascending {
 		for _, dayTotal := range total {
@@ -78,26 +78,7 @@ func FormatTotal(total manipulation.Total, order Order) string {
 	return strings.Join(lines, "\n")
 }
 
-func formatDuration(d manipulation.Delta) string {
-	if d.TaskId() == "" {
-		return fmt.Sprintf("%s %s", d.Duration().Str(), d.TaskName())
-	}
-	return fmt.Sprintf("%s %s %s", d.Duration().Str(), d.TaskId(), d.TaskName())
-}
-func FormatDurations(entries []log.Entry, now time.Time) string {
-	ps := manipulation.ToDeltas(entries)
-	var lines []string
-	for _, p := range ps {
-		if p.IsOpenEnded() {
-			lines = append(lines, formatDate(p.StartTime()))
-			if p.IsEOD() {
-				continue
-			}
-			p.SetEnd(now)
-			lines = append(lines, "+"+formatDuration(p))
-		} else {
-			lines = append(lines, " "+formatDuration(p))
-		}
-	}
-	return strings.Join(lines, "\n")
+func FormatDurations(entries []log.Entry, now time.Time, order Order) string {
+	list.Reverse(entries)
+	return formatTotal(manipulation.Accumulate(entries, now), order)
 }

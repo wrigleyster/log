@@ -3,6 +3,7 @@ package manipulation
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 	"wlog/log"
 )
@@ -49,13 +50,20 @@ func (t TaskTotal) Str() string {
 	}
 	return fmt.Sprintf("%s%s %s %s", openness, t.Duration.Str(), t.ExtId, t.Name)
 }
+func (t TaskTotal) IsEOD() bool {
+	return strings.ToLower(t.Name) == "eod"
+}
 
-func GetTaskTotal(task log.Entry, endTime time.Time) TaskTotal {
+func getTaskTotal(task log.Entry, endTime time.Time, isOpen bool) TaskTotal {
+	if task.IsEOD() {
+		endTime = task.Time
+		isOpen = false
+	}
 	return TaskTotal{
 		GetDuration(task.Time, endTime),
 		task.TaskName,
 		task.TaskId,
-		false,
+		isOpen,
 	}
 }
 func last[T any](slice []T) int {
@@ -82,11 +90,7 @@ func Accumulate(entries []log.Entry, now time.Time) Total {
 		if i == 0 {
 			dayTotal = NewDayTotal(entry.Time)
 		}
-		if entry.TaskName == "eod" {
-			task = GetTaskTotal(entry, entry.Time)
-		} else {
-			task = GetTaskTotal(entry, endTime)
-		}
+		task = getTaskTotal(entry, endTime, false)
 
 		dayTotal.Duration = dayTotal.Duration.Add(task.Duration)
 		dayTotal.Tasks = append(dayTotal.Tasks, task)
@@ -96,11 +100,7 @@ func Accumulate(entries []log.Entry, now time.Time) Total {
 		}
 	}
 	entry := entries[last(entries)]
-	if entry.TaskName == "eod" {
-		task = GetTaskTotal(entry, entry.Time)
-	} else {
-		task = TaskTotal{GetDuration(entry.Time, now), entry.TaskName, entry.TaskId, true}
-	}
+	task = getTaskTotal(entry, now, true)
 	dayTotal.Duration = dayTotal.Duration.Add(task.Duration)
 	dayTotal.Tasks = append(dayTotal.Tasks, task)
 

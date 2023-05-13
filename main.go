@@ -8,9 +8,7 @@ import (
 	"strings"
 	"time"
 	"wlog/formatter"
-	"wlog/list"
 	"wlog/log"
-	"wlog/manipulation"
 )
 
 func printUsage() {
@@ -27,9 +25,7 @@ func printLog() {
 func printLogDiff() {
 	db := Seed("sqlite.db")
 	entries := db.getLogLines(15)
-	//	println(formatter.FormatDurations(entries, time.Now()))
-	list.Reverse(entries)
-	println(formatter.FormatTotal(manipulation.Accumulate(entries, time.Now()), formatter.Ascending))
+	println(formatter.FormatDurations(entries, time.Now(), formatter.Ascending))
 }
 func warnOrDie(msg string) {
 	print("Warning: " + msg + " Proceed anyway [y/N]: ")

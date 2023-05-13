@@ -84,6 +84,10 @@ func (entry Entry) parseDate() Entry {
 	return entry
 }
 
+func (entry Entry) IsEOD() bool {
+	return strings.ToLower(entry.TaskName) == "eod"
+}
+
 func (entry Entry) Str() string {
 	return fmt.Sprintf("Entry(%s,%s,%s)", entry.Time.String(), entry.TaskName, entry.TaskId)
 }

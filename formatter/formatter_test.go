@@ -35,9 +35,9 @@ func TestFormatDurations_withEOD(t *testing.T) {
 		{log.Date(date).At(11, 31), "lunch", ""},
 		{log.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
 	}
-	actual := FormatDurations(entries, time.Now())
+	actual := FormatDurations(entries, time.Now(), Ascending)
 
-	expected := "Sunday 23 April\n" +
+	expected := "Sunday 23 April, total: 7h 00m\n" +
 		" 2h 00m SFFEAT0000003 Testing the timelogger\n" +
 		" 2h 30m SFFEAT0000002 Implementing the timelogger\n" +
 		" 0h 29m lunch\n" +
@@ -54,9 +54,9 @@ func TestFormatDurations_withoutEOD(t *testing.T) {
 		{log.Date(date).At(11, 31), "lunch", ""},
 		{log.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
 	}
-	actual := FormatDurations(entries, date)
+	actual := FormatDurations(entries, date, Ascending)
 
-	expected := "Sunday 23 April\n" +
+	expected := "Sunday 23 April, total: 7h 07m\n" +
 		"+2h 07m SFFEAT0000003 Testing the timelogger\n" +
 		" 2h 30m SFFEAT0000002 Implementing the timelogger\n" +
 		" 0h 29m lunch\n" +
@@ -74,7 +74,7 @@ func TestFormatTotal(t *testing.T) {
 		{log.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
 		{log.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
 	}
-	actual := FormatTotal(manipulation.Accumulate(entries, date), Ascending)
+	actual := formatTotal(manipulation.Accumulate(entries, date), Ascending)
 
 	expected := "Saturday 22 April, total: 8h 00m\n" +
 		" 8h 00m SFFEAT0000001 working\n" +
@@ -95,7 +95,7 @@ func TestFormatTotal2(t *testing.T) {
 		{log.Date(earlier).At(9, 30), "dsu", ""},
 	}
 	list.Reverse(entries)
-	actual := FormatTotal(manipulation.Accumulate(entries, date), Descending)
+	actual := formatTotal(manipulation.Accumulate(entries, date), Descending)
 
 	expected := "Saturday 13 May, total: 0h 19m\n" +
 		"+0h 19m early start\n" +
