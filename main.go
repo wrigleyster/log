@@ -5,6 +5,7 @@ import (
 	"github.com/wrigleyster/gorm/util"
 	"github.com/wrigleyster/opt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 	"wlog/formatter"
@@ -12,23 +13,48 @@ import (
 	"wlog/manipulation"
 )
 
+func getArg(i int, fallback string) string {
+	if len(os.Args) > i {
+		return os.Args[i]
+	}
+	return fallback
+}
+func getIntArg(i, fallback int) int {
+	if len(os.Args) > i {
+		if i, e := strconv.Atoi(os.Args[i]); e == nil {
+			return i
+		}
+	}
+	return fallback
+}
+
 func printUsage() {
 	fmt.Printf("%s: [SFFEAT] working on x [at 9:30] [yesterday|monday-friday]\n", os.Args[0])
+	fmt.Printf("%s: -l[d|t] [count]\n", os.Args[0])
+	fmt.Printf("%s: -dd [SFFEAT] worked on x at 9:30 [yesterday|monday-friday]\n", os.Args[0])
+	fmt.Printf("%s: -sid SFFEAT = worked on x [at 9:30] [yesterday|monday-friday]\n", os.Args[0])
 	fmt.Printf("%s: -h\n", os.Args[0])
 	os.Exit(1)
 }
 func printLog() {
 	db := Seed("sqlite.db")
-	entries := db.getLogLines(15)
+	entries := db.getLogLines(getIntArg(2, 15))
 	fmt.Printf("%d entries:\n", len(entries))
 	view := formatter.AgendaView(manipulation.Accumulate(entries, time.Now()))
 	println(view.Format(formatter.Ascending))
 }
 func printLogDiff() {
 	db := Seed("sqlite.db")
-	entries := db.getLogLines(15)
+	entries := db.getLogLines(getIntArg(2, 15))
 	view := formatter.DurationView(manipulation.Aggregate(entries, time.Now()))
 	println(view.Format(formatter.Ascending))
+}
+func printTasks() {
+	db := Seed("sqlite.db")
+	tasks := db.getTasks(getIntArg(2, 15))
+	for _, task := range tasks {
+		fmt.Printf("%s %s\n", task.ExtId, task.TaskName)
+	}
 }
 func warnOrDie(msg string) {
 	print("Warning: " + msg + " Proceed anyway [y/N]: ")
@@ -74,7 +100,12 @@ func add() {
 			db.SaveEntry(&entry)
 		}
 	}
-
+}
+func setId() {
+	println("Not Implemented yet")
+}
+func deleteEntry() {
+	println("Not Implemented yet")
 }
 func parseArgs(argv []string) func() {
 	if len(argv) == 0 ||
@@ -82,6 +113,12 @@ func parseArgs(argv []string) func() {
 		return printLog
 	} else if argv[0] == "-ld" {
 		return printLogDiff
+	} else if argv[0] == "-lt" {
+		return printTasks
+	} else if argv[0] == "-sid" {
+		return setId
+	} else if argv[0] == "-dd" {
+		return deleteEntry
 	} else if argv[0] == "-h" {
 		return printUsage
 	} else {

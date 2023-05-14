@@ -133,6 +133,22 @@ func (repo Repository) getLogLines(count int) []log.Entry {
 	list.Reverse(entries)
 	return entries
 }
+func (repo Repository) getTasks(count int) []Task {
+	var tasks []Task
+	repo.db.Orm(func(db *sql.DB) {
+		stmt, err := db.Prepare("SELECT id, extId, taskName FROM task LIMIT ?")
+		util.Log(err)
+		row, err := stmt.Query(count)
+		util.Log(err)
+		for row.Next() {
+			task := Task{}
+			err = row.Scan(&task.Id, &task.ExtId, &task.TaskName)
+			util.Log(err)
+			tasks = append(tasks, task)
+		}
+	})
+	return tasks
+}
 
 //func (repo Repository) ByKey(key string) (Entry, error) {
 //	res := repo.db.From(repo.table).
