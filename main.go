@@ -27,7 +27,7 @@ func printLog() {
 func printLogDiff() {
 	db := Seed("sqlite.db")
 	entries := db.getLogLines(15)
-	view := formatter.DurationView(manipulation.Accumulate(entries, time.Now()))
+	view := formatter.DurationView(manipulation.Aggregate(entries, time.Now()))
 	println(view.Format(formatter.Ascending))
 }
 func warnOrDie(msg string) {

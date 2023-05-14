@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 	"wlog/chrono"
-	"wlog/list"
 	"wlog/log"
 	"wlog/manipulation"
 )
@@ -19,7 +18,7 @@ func TestFormatDurations_withEOD(t *testing.T) {
 		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
 		{chrono.Date(date).At(16, 30), "EOD", ""},
 	}
-	actual := DurationView(manipulation.Accumulate(entries, time.Now())).Format(Ascending)
+	actual := DurationView(manipulation.Aggregate(entries, time.Now())).Format(Ascending)
 
 	expected := "Sunday 23 April, total: 7h 00m\n" +
 		" 2h 01m SFFEAT0000001 Designing the timelogger\n" +
@@ -38,7 +37,7 @@ func TestFormatDurations_withoutEOD(t *testing.T) {
 		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
 		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
 	}
-	actual := DurationView(manipulation.Accumulate(entries, date)).Format(Ascending)
+	actual := DurationView(manipulation.Aggregate(entries, date)).Format(Ascending)
 
 	expected := "Sunday 23 April, total: 7h 07m\n" +
 		" 2h 01m SFFEAT0000001 Designing the timelogger\n" +
@@ -58,7 +57,7 @@ func TestFormatTotal(t *testing.T) {
 		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
 		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
 	}
-	actual := DurationView(manipulation.Accumulate(entries, date)).Format(Ascending)
+	actual := DurationView(manipulation.Aggregate(entries, date)).Format(Ascending)
 
 	expected := "Saturday 22 April, total: 8h 00m\n" +
 		" 8h 00m SFFEAT0000001 working\n" +
@@ -73,19 +72,40 @@ func TestFormatTotal2(t *testing.T) {
 	date := time.Date(2023, 5, 13, 1, 02, 0, 0, time.Local)
 	earlier := time.Date(2023, 5, 12, 14, 02, 0, 0, time.Local)
 	entries := []log.Entry{
-		{chrono.Date(date).At(0, 43), "early start", ""},
-		{chrono.Date(earlier).At(12, 00), "eod", ""},
-		{chrono.Date(earlier).At(10, 00), "horse riding", ""},
 		{chrono.Date(earlier).At(9, 30), "dsu", ""},
+		{chrono.Date(earlier).At(10, 00), "horse riding", ""},
+		{chrono.Date(earlier).At(12, 00), "eod", ""},
+		{chrono.Date(date).At(0, 43), "early start", ""},
 	}
-	list.Reverse(entries)
-	actual := DurationView(manipulation.Accumulate(entries, date)).Format(Descending)
+	actual := DurationView(manipulation.Aggregate(entries, date)).Format(Descending)
 
 	expected := "Saturday 13 May, total: 0h 19m\n" +
 		"+0h 19m early start\n" +
 		"Friday 12 May, total: 2h 30m\n" +
 		" 2h 00m horse riding\n" +
 		" 0h 30m dsu"
+
+	assert.Equal(t, expected, actual)
+}
+func TestFormatTotal3(t *testing.T) {
+	date := time.Date(2023, 5, 13, 10, 02, 0, 0, time.Local)
+	earlier := time.Date(2023, 5, 12, 14, 02, 0, 0, time.Local)
+	entries := []log.Entry{
+		{chrono.Date(earlier).At(9, 30), "dsu", ""},
+		{chrono.Date(earlier).At(9, 45), "check email", ""},
+		{chrono.Date(earlier).At(10, 00), "horse riding", ""},
+		{chrono.Date(earlier).At(11, 45), "check email", ""},
+		{chrono.Date(earlier).At(12, 00), "eod", ""},
+		{chrono.Date(date).At(9, 30), "check email", ""},
+	}
+	actual := DurationView(manipulation.Aggregate(entries, date)).Format(Descending)
+
+	expected := "Saturday 13 May, total: 0h 32m\n" +
+		"+0h 32m check email\n" +
+		"Friday 12 May, total: 2h 30m\n" +
+		" 0h 30m check email\n" +
+		" 1h 45m horse riding\n" +
+		" 0h 15m dsu"
 
 	assert.Equal(t, expected, actual)
 }

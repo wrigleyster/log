@@ -2,6 +2,7 @@ package manipulation
 
 import (
 	"os"
+	"sort"
 	"strings"
 	"time"
 	"wlog/chrono"
@@ -13,7 +14,7 @@ type Total []DayTotal
 type DayTotal struct {
 	Duration chrono.Duration
 	Day      chrono.Day
-	Tasks    []TaskTotal // todo replace with aggregating map
+	Tasks    []TaskTotal
 }
 
 func NewDayTotal(t time.Time) DayTotal {
@@ -66,29 +67,76 @@ func assertAscending(entries []log.Entry) {
 }
 func Accumulate(entries []log.Entry, now time.Time) Total {
 	assertAscending(entries)
-	total := Total{}
-	dayTotal := DayTotal{}
+	total, dayTotal := Total{}, DayTotal{}
 	var task TaskTotal
 	for i, j := 0, 1; j < len(entries); i, j = j, j+1 {
-		entry := entries[i]
-		endTime := entries[j].Time
+		entry, endTime := entries[i], entries[j].Time
 		if i == 0 {
 			dayTotal = NewDayTotal(entry.Time)
 		}
 		task = getTaskTotal(entry, endTime, false)
-
 		dayTotal.Duration = dayTotal.Duration.Add(task.Duration)
 		dayTotal.Tasks = append(dayTotal.Tasks, task)
+
 		if chrono.GetDay(entry.Time) != chrono.GetDay(endTime) {
 			total = append(total, dayTotal)
 			dayTotal = NewDayTotal(endTime)
 		}
 	}
-	entry := entries[last(entries)]
-	task = getTaskTotal(entry, now, true)
+	task = getTaskTotal(entries[last(entries)], now, true)
 	dayTotal.Duration = dayTotal.Duration.Add(task.Duration)
 	dayTotal.Tasks = append(dayTotal.Tasks, task)
 
+	total = append(total, dayTotal)
+	return total
+}
+
+type aggregate map[string]TaskTotal
+
+func (a aggregate) asList() []TaskTotal {
+	var list []TaskTotal
+	for _, v := range a {
+		list = append(list, v)
+	}
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].StartedAt.Before(list[j].StartedAt)
+	})
+	return list
+}
+func (a aggregate) add(task TaskTotal) {
+	if t, present := a[task.Str()]; present {
+		t.Duration = t.Duration.Add(task.Duration)
+		t.StartedAt = task.StartedAt
+		a[task.Str()] = t
+	} else {
+		a[task.Str()] = task
+	}
+}
+
+func Aggregate(entries []log.Entry, now time.Time) Total {
+	assertAscending(entries)
+	total, dayTotal := Total{}, DayTotal{}
+	aggregate := make(aggregate)
+	var task TaskTotal
+	for i, j := 0, 1; j < len(entries); i, j = j, j+1 {
+		entry, endTime := entries[i], entries[j].Time
+		if i == 0 {
+			dayTotal = NewDayTotal(entry.Time)
+		}
+		task = getTaskTotal(entry, endTime, false)
+		aggregate.add(task)
+		dayTotal.Duration = dayTotal.Duration.Add(task.Duration)
+		if chrono.GetDay(entry.Time) != chrono.GetDay(endTime) {
+			dayTotal.Tasks = aggregate.asList()
+			total = append(total, dayTotal)
+			dayTotal = NewDayTotal(endTime)
+			aggregate = make(map[string]TaskTotal)
+		}
+	}
+	task = getTaskTotal(entries[last(entries)], now, true)
+	aggregate.add(task)
+	dayTotal.Duration = dayTotal.Duration.Add(task.Duration)
+	dayTotal.Tasks = aggregate.asList()
 	total = append(total, dayTotal)
 	return total
 }
