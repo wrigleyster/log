@@ -121,6 +121,8 @@ func parseArgs(argv []string) func() {
 		return deleteEntry
 	} else if argv[0] == "-h" {
 		return printUsage
+	} else if argv[0] == os.Args[0] {
+		return printUsage
 	} else {
 		return add
 	}
