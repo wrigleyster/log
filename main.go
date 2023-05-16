@@ -13,6 +13,9 @@ import (
 	"wlog/manipulation"
 )
 
+func getDb() Repository {
+	return Seed("sqlite.db")
+}
 func getArg(i int, fallback string) string {
 	if len(os.Args) > i {
 		return os.Args[i]
@@ -41,7 +44,7 @@ func printUsage() {
 	fmt.Printf("%s: [SFFEAT] working on x [at 9:30] [yesterday|monday-friday]\n", os.Args[0])
 	fmt.Printf("%s: -l[d|t] [count]\n", os.Args[0])
 	fmt.Printf("%s: -dd [SFFEAT] worked on x at 9:30 [yesterday|monday-friday]\n", os.Args[0])
-	fmt.Printf("%s: -sid SFFEAT = worked on x [at 9:30] [yesterday|monday-friday]\n", os.Args[0])
+	fmt.Printf("%s: -s SFFEAT = worked on x [at 9:30] [yesterday|monday-friday]\n", os.Args[0])
 	fmt.Printf("%s: -h\n", os.Args[0])
 	os.Exit(1)
 }
@@ -71,18 +74,21 @@ func printTasks() {
 		fmt.Printf("%s %s\n", task.TaskName, task.ExtId)
 	}
 }
-func warnOrDie(msg string) {
-	print("Warning: " + msg + " Proceed anyway [y/N]: ")
-	var response string
-	_, err := fmt.Scan(&response)
+func Prompt(prompt ...string) string {
+	for _,msg := range prompt {
+		print(msg)
+	}
+	var reply string
+	_, err := fmt.Scanln(&reply)
 	util.Log(err)
+	return reply
+}
+func warnOrDie(msg string) {
+	response := Prompt("Warning:", msg, "Proceed anyway [y/N]: ")
 	response = strings.ToLower(response)
 	if response != "y" && response != "yes" {
 		os.Exit(1)
 	}
-}
-func getDb() Repository {
-	return Seed("sqlite.db")
 }
 func add() {
 	argv := os.Args[1:]
@@ -120,7 +126,22 @@ func add() {
 	}
 }
 func setId() {
-	println("Not Implemented yet")
+	argv := os.Args[1:]
+	db := getDb()
+	extId, name := log.ParseSet(argv)
+	if extId != "" && name != "" {
+		tasks := db.TaskByName(name)
+		if len(tasks) == 1 {
+			tasks[0].ExtId = extId
+			db.SaveTask(&tasks[0])
+		} else {
+			println("Error: multiple tasks named: ", name)
+			os.Exit(1)
+		}
+	} else {
+		println("Error: invalid assignment")
+		os.Exit(1)
+	}
 }
 func deleteEntry() {
 	println("Not Implemented yet")
@@ -133,7 +154,7 @@ func parseArgs(argv []string) func() {
 		return printLogDiff
 	} else if argv[0] == "-lt" {
 		return printTasks
-	} else if argv[0] == "-sid" {
+	} else if argv[0] == "-s" {
 		return setId
 	} else if argv[0] == "-dd" {
 		return deleteEntry
