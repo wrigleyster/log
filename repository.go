@@ -149,6 +149,23 @@ func (repo Repository) getTasks(count int) []Task {
 	})
 	return tasks
 }
+func (repo Repository) findTasks(nameOrExtId string) []Task {
+    var tasks []Task
+    repo.db.Orm(func(db *sql.DB) {
+        query := "%" + nameOrExtId + "%"
+        stmt, err := db.Prepare("SELECT id, extId, taskName FROM task WHERE taskName like ? or extId like ?")
+        util.Log(err)
+        row, err := stmt.Query(query, query)
+        util.Log(err)
+        for row.Next() {
+            task := Task{}
+            err = row.Scan(&task.Id, &task.ExtId, &task.TaskName)
+            util.Log(err)
+            tasks = append(tasks, task)
+        }
+    })
+    return tasks
+}
 
 //func (repo Repository) ByKey(key string) (Entry, error) {
 //	res := repo.db.From(repo.table).

@@ -27,6 +27,15 @@ func getIntArg(i, fallback int) int {
 	}
 	return fallback
 }
+func getOptionalIntArg(i, fallback int) opt.Maybe[int] {
+	if len(os.Args) > i {
+		if i, e := strconv.Atoi(os.Args[i]); e == nil {
+			return opt.Some(i)
+		}
+        return opt.No[int]()
+	}
+	return opt.Some(fallback)
+}
 
 func printUsage() {
 	fmt.Printf("%s: [SFFEAT] working on x [at 9:30] [yesterday|monday-friday]\n", os.Args[0])
@@ -37,21 +46,27 @@ func printUsage() {
 	os.Exit(1)
 }
 func printLog() {
-	db := Seed("sqlite.db")
+	db := getDb()
 	entries := db.getLogLines(getIntArg(2, 15))
 	fmt.Printf("%d entries:\n", len(entries))
 	view := formatter.AgendaView(manipulation.Accumulate(entries, time.Now()))
 	println(view.Format(formatter.Ascending))
 }
 func printLogDiff() {
-	db := Seed("sqlite.db")
+	db := getDb()
 	entries := db.getLogLines(getIntArg(2, 15))
 	view := formatter.DurationView(manipulation.Aggregate(entries, time.Now()))
 	println(view.Format(formatter.Ascending))
 }
 func printTasks() {
-	db := Seed("sqlite.db")
-	tasks := db.getTasks(getIntArg(2, 15))
+	db := getDb()
+	count := getOptionalIntArg(2, 15)
+	var tasks []Task
+	if count.Exists {
+		tasks = db.getTasks(count.Value)
+	} else {
+		tasks = db.findTasks(strings.Join(os.Args[2:], " "))
+	}
 	for _, task := range tasks {
 		fmt.Printf("%s %s\n", task.ExtId, task.TaskName)
 	}
@@ -66,9 +81,12 @@ func warnOrDie(msg string) {
 		os.Exit(1)
 	}
 }
+func getDb() Repository {
+	return Seed("sqlite.db")
+}
 func add() {
 	argv := os.Args[1:]
-	db := Seed("sqlite.db")
+	db := getDb()
 	msg := log.Parse(strings.Join(argv, " "))
 	if time.Now().Sub(msg.Time) < 0 {
 		warnOrDie("That event is in the future.")
