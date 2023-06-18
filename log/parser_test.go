@@ -2,6 +2,7 @@ package log
 
 import (
 	"github.com/stretchr/testify/assert"
+	"wlog/chrono"
 	"testing"
 	"time"
 )
@@ -68,6 +69,7 @@ func TestParseDate_monday(t *testing.T) {
 	assert.Equal(t, monday.Year(), entry.Time.Year())
 	assert.Equal(t, monday.Month(), entry.Time.Month())
 	assert.Equal(t, monday.Day(), entry.Time.Day())
+	assert.True(t, monday.Before(entry.Time))
 }
 
 func TestRelativeDate(t *testing.T) {
@@ -143,4 +145,24 @@ func TestParseTaskId(t *testing.T) {
 	entry = entry.parseTaskId()
 
 	assert.Equal(t, "SFFEAT001234", entry.TaskId)
+}
+
+func TestRelativeDateMonday(t *testing.T) {
+	monday    := time.Date(2023, 5, 22, 10, 54, 0, 0, time.Local)
+	tuesday   := time.Date(2023, 5, 23, 10, 54, 0, 0, time.Local)
+	wednesday := time.Date(2023, 5, 24, 10, 54, 0, 0, time.Local)
+	thursday  := time.Date(2023, 5, 25, 10, 54, 0, 0, time.Local)
+	friday    := time.Date(2023, 5, 26, 10, 54, 0, 0, time.Local)
+
+	assert.Equal(t, "Monday", monday.Weekday().String())
+	assert.Equal(t, chrono.Day(monday), chrono.Day(relativeDate(tuesday, "monday")))
+	assert.Equal(t, chrono.Day(monday), chrono.Day(relativeDate(wednesday, "monday")))
+	assert.Equal(t, chrono.Day(monday), chrono.Day(relativeDate(thursday, "monday")))
+	assert.Equal(t, chrono.Day(monday), chrono.Day(relativeDate(friday, "monday")))
+
+	assert.Equal(t, "Tuesday", tuesday.Weekday().String())
+	assert.Equal(t, chrono.Day(tuesday), chrono.Day(relativeDate(tuesday, "tuesday")))
+	assert.Equal(t, chrono.Day(tuesday), chrono.Day(relativeDate(wednesday, "tuesday")))
+	assert.Equal(t, chrono.Day(tuesday), chrono.Day(relativeDate(thursday, "tuesday")))
+	assert.Equal(t, chrono.Day(tuesday), chrono.Day(relativeDate(friday, "tuesday")))
 }
