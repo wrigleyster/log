@@ -17,6 +17,31 @@ func TestParseTime(t *testing.T) {
 	assert.Equal(t, time.Now().Day(), entry.Time.Day())
 }
 
+func TestParseDateTime(t *testing.T) {
+    friday := time.Date(2023,6,2,16,45,0,0,time.Local)
+    today := time.Date(2023,6,5,8,17,0,0,time.Local)
+	entry := Entry{today, "eod at 16:45 friday", ""}.
+        parseDate().
+        parseTime()
+
+	assert.Equal(t, "eod", entry.TaskName)
+	assert.Equal(t, "Friday", entry.Time.Weekday().String())
+	assert.Equal(t, friday.Hour(), entry.Time.Hour())
+	assert.Equal(t, friday.Minute(), entry.Time.Minute())
+	assert.Equal(t, friday.Year(), entry.Time.Year())
+	assert.Equal(t, friday.Month(), entry.Time.Month())
+	assert.Equal(t, friday.Day(), entry.Time.Day())
+}
+func TestRelativeDateTime(t *testing.T) {
+    friday := time.Date(2023,6,2,16,45,0,0,time.Local)
+    today := time.Date(2023,6,5,8,17,0,0,time.Local)
+	r := relativeDate(today, "friday")
+	assert.Equal(t, "Friday", r.Weekday().String())
+	assert.Equal(t, friday.Year(), r.Year())
+	assert.Equal(t, friday.Month(), r.Month())
+	assert.Equal(t, friday.Day(), r.Day())
+}
+
 func TestParseDate_yesterday(t *testing.T) {
 	entry := NewLogEntry("working on cool stuff at 8:40 yesterday").
 		parseDate().
@@ -50,17 +75,66 @@ func TestRelativeDate(t *testing.T) {
 	assert.Equal(t, "Sunday", time.Weekday(0).String())
 	assert.Equal(t, time.Weekday(0), today.Weekday())
 
-	tuesday := relativeDate(today, "tuesday")
-	assert.Equal(t, "Tuesday", tuesday.Weekday().String())
-	assert.True(t, today.After(tuesday))
-
 	monday := relativeDate(today, "monday")
 	assert.Equal(t, "Monday", monday.Weekday().String())
 	assert.True(t, today.After(monday))
 
+	tuesday := relativeDate(today, "tuesday")
+	assert.Equal(t, "Tuesday", tuesday.Weekday().String())
+	assert.True(t, today.After(tuesday))
+
+	wednesday := relativeDate(today, "wednesday")
+	assert.Equal(t, "Wednesday", wednesday.Weekday().String())
+	assert.True(t, today.After(wednesday))
+
+	thursday := relativeDate(today, "thursday")
+	assert.Equal(t, "Thursday", thursday.Weekday().String())
+	assert.True(t, today.After(thursday))
+
+	friday := relativeDate(today, "friday")
+	assert.Equal(t, "Friday", friday.Weekday().String())
+	assert.True(t, today.After(friday))
+
+	saturday := relativeDate(today, "saturday")
+	assert.Equal(t, "Saturday", saturday.Weekday().String())
+	assert.True(t, today.After(saturday))
+
 	sunday := relativeDate(today, "sunday")
 	assert.Equal(t, "Sunday", sunday.Weekday().String())
 	assert.Equal(t, today, sunday)
+}
+func TestRelativeDate2(t *testing.T) {
+    today := time.Date(2023,6,5,8,17,0,0,time.Local)
+	assert.Equal(t, "Sunday", time.Weekday(0).String())
+	assert.Equal(t, time.Weekday(1), today.Weekday())
+
+	monday := relativeDate(today, "monday")
+	assert.Equal(t, "Monday", monday.Weekday().String())
+	assert.Equal(t, today, monday, "today is monday")
+
+	tuesday := relativeDate(today, "tuesday")
+	assert.Equal(t, "Tuesday", tuesday.Weekday().String())
+	assert.True(t, today.After(tuesday), "tuesday is later")
+
+	wednesday := relativeDate(today, "wednesday")
+	assert.Equal(t, "Wednesday", wednesday.Weekday().String())
+	assert.True(t, today.After(wednesday), "wednesday is later")
+
+	thursday := relativeDate(today, "thursday")
+	assert.Equal(t, "Thursday", thursday.Weekday().String())
+	assert.True(t, today.After(thursday), "thursday is later")
+
+	friday := relativeDate(today, "friday")
+	assert.Equal(t, "Friday", friday.Weekday().String())
+	assert.True(t, today.After(friday), "friday is later")
+
+	saturday := relativeDate(today, "saturday")
+	assert.Equal(t, "Saturday", saturday.Weekday().String())
+	assert.True(t, today.After(saturday), "saturday is later")
+
+	sunday := relativeDate(today, "sunday")
+	assert.Equal(t, "Sunday", sunday.Weekday().String())
+	assert.True(t, today.After(sunday))
 }
 
 func TestParseTaskId(t *testing.T) {
