@@ -68,7 +68,7 @@ func printTasks() {
 		tasks = db.findTasks(strings.Join(os.Args[2:], " "))
 	}
 	for _, task := range tasks {
-		fmt.Printf("%s %s\n", task.ExtId, task.TaskName)
+		fmt.Printf("%s %s\n", task.TaskName, task.ExtId)
 	}
 }
 func warnOrDie(msg string) {
