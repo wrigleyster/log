@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"github.com/stretchr/testify/assert"
 	"github.com/wrigleyster/gorm/util"
 	"os"
@@ -21,7 +20,6 @@ func TestSaveAndRecover(t *testing.T) {
 		Id:              "",
 		TaskId:          "SFFEAT012345",
 		StartedAt:       time.Now(),
-		DurationMinutes: sql.NullInt32{0, false},
 	}
 	repo.SaveEntry(&entry)
 	t.Logf("entry = %s", entry.Id)

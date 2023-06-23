@@ -18,39 +18,38 @@ type Repository struct {
 
 func Seed(name string) Repository {
 	db := sqlite.New(name)
-	db.With("id string, extId string, taskName string not null").
+	db.With("id text not null, extId text, taskName text not null, state text").
 		Key("id").
 		CreateTable("task")
-	db.With("id string, taskId string not null, startedAt timestamp unique not null, durationMinutes integer").
+	db.With("id text not null, taskId text not null, startedAt timestamp unique not null").
 		Key("id").
 		CreateTable("entry")
 	return Repository{db}
 }
 
 type Task struct {
-	Id, ExtId, TaskName string
+	Id, ExtId, TaskName, State string
 }
 type Entry struct {
 	Id, TaskId      string
 	StartedAt       time.Time
-	DurationMinutes sql.NullInt32
 }
 
 func (task Task) fields() []any {
-	return []any{task.Id, task.ExtId, task.TaskName}
+	return []any{task.Id, task.ExtId, task.TaskName, task.State}
 }
 func (entry Entry) fields() []any {
-	return []any{entry.Id, entry.TaskId, entry.StartedAt, entry.DurationMinutes}
+	return []any{entry.Id, entry.TaskId, entry.StartedAt}
 }
 func makeTask(row *sql.Rows) Task {
 	var task Task
-	err := row.Scan(&task.Id, &task.ExtId, &task.TaskName)
+	err := row.Scan(&task.Id, &task.ExtId, &task.TaskName, &task.State)
 	util.Log(err)
 	return task
 }
 func makeEntry(row *sql.Rows) Entry {
 	var entry Entry
-	err := row.Scan(&entry.Id, &entry.TaskId, &entry.StartedAt, &entry.DurationMinutes)
+	err := row.Scan(&entry.Id, &entry.TaskId, &entry.StartedAt)
 	util.Log(err)
 	return entry
 }
@@ -76,8 +75,8 @@ func (repo Repository) Save(entry log.Entry) {
 	res.Next()
 	taskid := uuid.NewString()
 	uuid.New().ID()
-	repo.db.From("task").Replace(taskid, entry.TaskId, entry.TaskName)
-	repo.db.From("entry").Replace(uuid.NewString(), taskid, entry.Time.String(), nil)
+	repo.db.From("task").Replace(taskid, entry.TaskId, entry.TaskName,"")
+	repo.db.From("entry").Replace(uuid.NewString(), taskid, entry.Time.String())
 
 }
 func (repo Repository) TaskByExtId(extId string) []Task {
@@ -136,35 +135,19 @@ func (repo Repository) getLogLines(count int) []log.Entry {
 func (repo Repository) getTasks(count int) []Task {
 	var tasks []Task
 	repo.db.Orm(func(db *sql.DB) {
-		stmt, err := db.Prepare("SELECT id, extId, taskName FROM task LIMIT ?")
+		stmt, err := db.Prepare("SELECT * FROM task WHERE state != 'done' LIMIT ?")
 		util.Log(err)
 		row, err := stmt.Query(count)
 		util.Log(err)
 		for row.Next() {
-			task := Task{}
-			err = row.Scan(&task.Id, &task.ExtId, &task.TaskName)
-			util.Log(err)
-			tasks = append(tasks, task)
+			tasks = append(tasks, makeTask(row))
 		}
 	})
 	return tasks
 }
 func (repo Repository) findTasks(nameOrExtId string) []Task {
-    var tasks []Task
-    repo.db.Orm(func(db *sql.DB) {
-        query := "%" + nameOrExtId + "%"
-        stmt, err := db.Prepare("SELECT id, extId, taskName FROM task WHERE taskName like ? or extId like ?")
-        util.Log(err)
-        row, err := stmt.Query(query, query)
-        util.Log(err)
-        for row.Next() {
-            task := Task{}
-            err = row.Scan(&task.Id, &task.ExtId, &task.TaskName)
-            util.Log(err)
-            tasks = append(tasks, task)
-        }
-    })
-    return tasks
+    query := "%" + nameOrExtId + "%"
+    return repo.taskBy("state != 'done' and taskName like ? or extId like ?", query, query)
 }
 
 //func (repo Repository) ByKey(key string) (Entry, error) {
