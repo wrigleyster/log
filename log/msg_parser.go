@@ -20,7 +20,7 @@ func NewLogEntry(input string) Entry {
 }
 
 func (entry Entry) parseTime() Entry {
-	now := entry.Time
+	now := entry.Time.Truncate(time.Minute)
 	words := strings.Split(entry.TaskName, " ")
 	if len(words) > 2 && words[len(words)-2] == "at" {
 		startTime := strings.Split(list.El(words, -1), ":")
@@ -76,7 +76,8 @@ func (entry Entry) Str() string {
 	return fmt.Sprintf("Entry(%s,%s,%s)", entry.Time.String(), entry.TaskName, entry.TaskId)
 }
 
-func Parse(input string) Entry {
+func Parse(argv []string) Entry {
+	input := strings.Join(argv, " ")
 	entry := NewLogEntry(input).
 		parseDate().
 		parseTime().

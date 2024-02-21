@@ -14,7 +14,9 @@ import (
 )
 
 func getDb() Repository {
-	return Seed("sqlite.db")
+	db := Seed("sqlite.db")
+	db.CleanChildlessParents()
+	return db
 }
 func getArg(i int, fallback string) string {
 	if len(os.Args) > i {
@@ -93,14 +95,13 @@ func warnOrDie(msg string) {
 func add() {
 	argv := os.Args[1:]
 	db := getDb()
-	msg := log.Parse(strings.Join(argv, " "))
+	msg := log.Parse(argv)
 	if time.Now().Sub(msg.Time) < 0 {
 		warnOrDie("That event is in the future.")
 	}
 	println("add")
 	if msg.TaskId != "" {
-		task := db.TaskByNameAndExtId(msg.TaskName, msg.TaskId)
-		if task.Exists {
+		if task := db.TaskByNameAndExtId(msg.TaskName, msg.TaskId); task.Exists {
 			entry := Entry{TaskId: task.Value.Id, StartedAt: msg.Time}
 			db.SaveEntry(&entry)
 		} else {
@@ -110,19 +111,20 @@ func add() {
 			db.SaveEntry(&entry)
 		}
 	} else {
-		tasks := db.TaskByName(msg.TaskName)
+		tasks := db.TasksByName(msg.TaskName)
 		if len(tasks) > 1 {
 			util.Log("more than one task with that name already exists")
-		} else if len(tasks) == 1 {
-			task := tasks[0]
-			entry := Entry{TaskId: task.Id, StartedAt: msg.Time}
-			db.SaveEntry(&entry)
-		} else {
-			task := Task{TaskName: msg.TaskName}
-			db.SaveTask(&task)
-			entry := Entry{TaskId: task.Id, StartedAt: msg.Time}
-			db.SaveEntry(&entry)
+			return
 		}
+		var task Task
+		if len(tasks) == 1 {
+			task = tasks[0]
+		} else {
+			task = Task{TaskName: msg.TaskName}
+		}
+		db.SaveTask(&task)
+		entry := Entry{TaskId: task.Id, StartedAt: msg.Time}
+		db.SaveEntry(&entry)
 	}
 }
 func setId() {
@@ -130,7 +132,7 @@ func setId() {
 	db := getDb()
 	extId, name := log.ParseSet(argv)
 	if extId != "" && name != "" {
-		tasks := db.TaskByName(name)
+		tasks := db.TasksByName(name)
 		if len(tasks) == 1 {
 			tasks[0].ExtId = extId
 			db.SaveTask(&tasks[0])
@@ -144,7 +146,36 @@ func setId() {
 	}
 }
 func deleteEntry() {
-	println("Not Implemented yet")
+	argv := os.Args[2:]
+	db := getDb()
+	msg := log.Parse(argv)
+	var task opt.Maybe[Task]
+	if entry := db.EntryByTimestamp(msg.Time); entry.Exists {
+		if task := db.TaskById(entry.Value.Id); task.Exists {
+			prompt := fmt.Sprintf("Would you like to delete \"%s %s %s\" [y/N]: ", entry.Value.StartedAt, task.Value.TaskName, task.Value.ExtId)
+			if reply := strings.ToLower(Prompt(prompt)); reply == "y" {
+				db.DeleteEntry(entry.Value)
+			}
+		} else {
+			fmt.Println("unable to find entry.")
+		}
+		return
+	}
+	if msg.TaskId != "" {
+		task = db.TaskByNameAndExtId(msg.TaskName, msg.TaskId)
+	} else {
+		task = opt.First(db.TasksByName(msg.TaskName)) // TODO pick in sort order
+	}
+	if task.Exists {
+		if entry := opt.First(db.EntriesByTaskId(task.Value.Id)); entry.Exists {
+			prompt := fmt.Sprintf("Would you like to delete \"%s %s %s\" [y/N]: ", entry.Value.StartedAt, task.Value.TaskName, task.Value.ExtId)
+			if reply := strings.ToLower(Prompt(prompt)); reply == "y" {
+				db.DeleteEntry(entry.Value)
+				return
+			}
+		}
+	}
+	fmt.Println("unable to find entry.")
 }
 func parseArgs(argv []string) func() {
 	if len(argv) == 0 ||

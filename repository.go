@@ -79,10 +79,13 @@ func (repo Repository) Save(entry log.Entry) {
 	repo.db.From("entry").Replace(uuid.NewString(), taskid, entry.Time.String())
 
 }
-func (repo Repository) TaskByExtId(extId string) []Task {
+func (repo Repository) TaskById(id string) opt.Maybe[Task] {
+	return opt.First(repo.taskBy("id = ?", id))
+}
+func (repo Repository) TasksByExtId(extId string) []Task {
 	return repo.taskBy("extId = ?", extId)
 }
-func (repo Repository) TaskByName(name string) []Task {
+func (repo Repository) TasksByName(name string) []Task {
 	return repo.taskBy("taskName = ?", name)
 }
 func (repo Repository) TaskByNameAndExtId(name, extId string) opt.Maybe[Task] {
@@ -90,6 +93,9 @@ func (repo Repository) TaskByNameAndExtId(name, extId string) opt.Maybe[Task] {
 }
 func (repo Repository) EntryById(id string) opt.Maybe[Entry] {
 	return opt.First(repo.entryBy("id = ?", id))
+}
+func (repo Repository) EntryByTimestamp(startedAt time.Time) opt.Maybe[Entry] {
+	return opt.First(repo.entryBy("startedAt = ?", startedAt))
 }
 func (repo Repository) EntriesByTaskId(taskId string) []Entry {
 	return repo.entryBy("taskId = ?", taskId)
@@ -118,7 +124,7 @@ func (repo Repository) entryBy(predicate string, value ...any) []Entry {
 func (repo Repository) getLogLines(count int) []log.Entry {
 	var entries []log.Entry
 	repo.db.Orm(func(db *sql.DB) {
-		stmt, err := db.Prepare("SELECT startedAt, task.taskName, task.extId FROM task inner join entry on task.id = entry.taskId order by entry.startedAt DESC limit ?")
+		stmt, err := db.Prepare("SELECT startedAt, task.taskName, task.extId FROM task INNER JOIN entry ON task.id = entry.taskId ORDER BY entry.startedAt DESC limit ?")
 		util.Log(err)
 		row, err := stmt.Query(count)
 		util.Log(err)
@@ -148,6 +154,18 @@ func (repo Repository) getTasks(count int) []Task {
 func (repo Repository) findTasks(nameOrExtId string) []Task {
     query := "%" + nameOrExtId + "%"
     return repo.taskBy("state != 'done' and taskName like ? or extId like ?", query, query)
+}
+func (repo Repository) CleanChildlessParents() (rowsCleaned int64) {
+	repo.db.Orm(func(db *sql.DB) {
+		stmt, err := db.Exec("DELETE FROM task WHERE task.id IN (SELECT task.id FROM task LEFT OUTER JOIN entry ON task.id = entry.taskId WHERE entry.taskId IS NULL)")
+		util.Log(err)
+		rowsCleaned, err = stmt.RowsAffected()
+		util.Log(err)
+	})
+	return rowsCleaned
+}
+func (repo Repository) DeleteEntry(entry Entry){
+	repo.db.From("entry").Where("id = ?", entry.Id).Delete()
 }
 
 //func (repo Repository) ByKey(key string) (Entry, error) {
