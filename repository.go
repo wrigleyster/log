@@ -2,14 +2,15 @@ package main
 
 import (
 	"database/sql"
+	"time"
+	"wlog/list"
+	"wlog/log"
+
 	"github.com/google/uuid"
 	"github.com/wrigleyster/gorm"
 	"github.com/wrigleyster/gorm/sqlite"
 	"github.com/wrigleyster/gorm/util"
 	"github.com/wrigleyster/opt"
-	"time"
-	"wlog/list"
-	"wlog/log"
 )
 
 type Repository struct {
@@ -75,7 +76,7 @@ func (repo Repository) Save(entry log.Entry) {
 	res.Next()
 	taskid := uuid.NewString()
 	uuid.New().ID()
-	repo.db.From("task").Replace(taskid, entry.TaskId, entry.TaskName,"")
+	repo.db.From("task").Replace(taskid, entry.TaskId, entry.TaskName, "")
 	repo.db.From("entry").Replace(uuid.NewString(), taskid, entry.Time.String())
 
 }
@@ -95,7 +96,7 @@ func (repo Repository) EntryById(id string) opt.Maybe[Entry] {
 	return opt.First(repo.entryBy("id = ?", id))
 }
 func (repo Repository) EntryByTimestamp(startedAt time.Time) opt.Maybe[Entry] {
-	return opt.First(repo.entryBy("startedAt = ?", startedAt))
+	return opt.First(repo.entryBy("startedAt like ?", startedAt))
 }
 func (repo Repository) EntriesByTaskId(taskId string) []Entry {
 	return repo.entryBy("taskId = ?", taskId)
@@ -152,8 +153,8 @@ func (repo Repository) getTasks(count int) []Task {
 	return tasks
 }
 func (repo Repository) findTasks(nameOrExtId string) []Task {
-    query := "%" + nameOrExtId + "%"
-    return repo.taskBy("state != 'done' and taskName like ? or extId like ?", query, query)
+	query := "%" + nameOrExtId + "%"
+	return repo.taskBy("state != 'done' and taskName like ? or extId like ?", query, query)
 }
 func (repo Repository) CleanChildlessParents() (rowsCleaned int64) {
 	repo.db.Orm(func(db *sql.DB) {
@@ -164,7 +165,7 @@ func (repo Repository) CleanChildlessParents() (rowsCleaned int64) {
 	})
 	return rowsCleaned
 }
-func (repo Repository) DeleteEntry(entry Entry){
+func (repo Repository) DeleteEntry(entry Entry) {
 	repo.db.From("entry").Where("id = ?", entry.Id).Delete()
 }
 

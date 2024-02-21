@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/wrigleyster/gorm/util"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/wrigleyster/gorm/util"
 )
 
 func TestSaveAndRecover(t *testing.T) {
@@ -59,4 +60,28 @@ func TestCleanupChildlessParents(t *testing.T) {
 	repo.CleanChildlessParents()
 	assert.Equal(t, 0, len(repo.getTasks(10)))
 
+}
+func TestEntryByTimestamp(t *testing.T) {
+	dbname := "test.db"
+	t.Cleanup(func() {
+		err := os.Remove(dbname)
+		util.Log(err)
+	})
+	repo := Seed(dbname)
+	task := Task{
+		Id: "",
+		TaskName: "A",
+	}
+	repo.SaveTask(&task)
+	entry := Entry{
+		Id: "",
+		TaskId: task.Id,
+		StartedAt: time.Now().Truncate(time.Minute),
+	}
+	repo.SaveEntry(&entry)
+
+	fetched := repo.EntryByTimestamp(time.Now().Truncate(time.Minute))
+	//assert.Equal(t, 4, fetched.Value.StartedAt)
+	
+	assert.True(t, fetched.Exists)
 }

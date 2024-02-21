@@ -156,11 +156,9 @@ func deleteEntry() {
 			if reply := strings.ToLower(Prompt(prompt)); reply == "y" {
 				db.DeleteEntry(entry.Value)
 			}
-		} else {
-			fmt.Println("unable to find entry.")
+			return
 		}
-		return
-	}
+	} else { println("trying generic") }
 	if msg.TaskId != "" {
 		task = db.TaskByNameAndExtId(msg.TaskName, msg.TaskId)
 	} else {
@@ -171,8 +169,8 @@ func deleteEntry() {
 			prompt := fmt.Sprintf("Would you like to delete \"%s %s %s\" [y/N]: ", entry.Value.StartedAt, task.Value.TaskName, task.Value.ExtId)
 			if reply := strings.ToLower(Prompt(prompt)); reply == "y" {
 				db.DeleteEntry(entry.Value)
-				return
 			}
+			return
 		}
 	}
 	fmt.Println("unable to find entry.")
