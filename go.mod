@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/google/uuid v1.3.0
 	github.com/stretchr/testify v1.8.2
-	github.com/wrigleyster/gorm v0.0.4
+	github.com/wrigleyster/gorm v0.0.5
 	github.com/wrigleyster/opt v0.0.0-20230428061841-91094b83c6f6
 )
 
