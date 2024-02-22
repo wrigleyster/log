@@ -12,9 +12,9 @@ import (
 func TestFormat(t *testing.T) {
 	date := time.Date(2023, 4, 23, 14, 37, 0, 0, time.Local)
 	entries := []log.Entry{
-		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
-		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
+		{Time: chrono.Date(date).At(9, 30), TaskName: "Designing the timelogger", TaskId: "SFFEAT0000001"},
+		{Time: chrono.Date(date).At(12, 00), TaskName: "Implementing the timelogger", TaskId: "SFFEAT0000002"},
+		{Time: chrono.Date(date).At(14, 30), TaskName: "Testing the timelogger", TaskId: "SFFEAT0000003"},
 	}
 	actual := AgendaView(manipulation.Accumulate(entries, date)).Format(Ascending)
 

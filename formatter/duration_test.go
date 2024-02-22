@@ -12,11 +12,11 @@ import (
 func TestFormatDurations_withEOD(t *testing.T) {
 	date := time.Date(2023, 4, 23, 14, 37, 0, 0, time.Local)
 	entries := []log.Entry{
-		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
-		{chrono.Date(date).At(11, 31), "lunch", ""},
-		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
-		{chrono.Date(date).At(16, 30), "EOD", ""},
+		{Time: chrono.Date(date).At(9, 30), TaskName: "Designing the timelogger", TaskId: "SFFEAT0000001"},
+		{Time: chrono.Date(date).At(11, 31),TaskName: "lunch", TaskId: ""},
+		{Time: chrono.Date(date).At(12, 00),TaskName: "Implementing the timelogger", TaskId: "SFFEAT0000002"},
+		{Time: chrono.Date(date).At(14, 30),TaskName: "Testing the timelogger", TaskId: "SFFEAT0000003"},
+		{Time: chrono.Date(date).At(16, 30),TaskName: "EOD", TaskId: ""},
 	}
 	actual := DurationView(manipulation.Aggregate(entries, time.Now())).Format(Ascending)
 
@@ -32,10 +32,10 @@ func TestFormatDurations_withEOD(t *testing.T) {
 func TestFormatDurations_withoutEOD(t *testing.T) {
 	date := time.Date(2023, 4, 23, 16, 37, 0, 0, time.Local)
 	entries := []log.Entry{
-		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
-		{chrono.Date(date).At(11, 31), "lunch", ""},
-		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
+		{Time: chrono.Date(date).At(9, 30), TaskName: "Designing the timelogger", TaskId: "SFFEAT0000001"},
+		{Time: chrono.Date(date).At(11, 31),TaskName: "lunch", TaskId: ""},
+		{Time: chrono.Date(date).At(12, 00),TaskName: "Implementing the timelogger", TaskId: "SFFEAT0000002"},
+		{Time: chrono.Date(date).At(14, 30),TaskName: "Testing the timelogger", TaskId: "SFFEAT0000003"},
 	}
 	actual := DurationView(manipulation.Aggregate(entries, date)).Format(Ascending)
 
@@ -51,11 +51,11 @@ func TestFormatTotal(t *testing.T) {
 	date := time.Date(2023, 4, 23, 14, 37, 0, 0, time.Local)
 	earlier := time.Date(2023, 4, 22, 14, 37, 0, 0, time.Local)
 	entries := []log.Entry{
-		{chrono.Date(earlier).At(9, 00), "working", "SFFEAT0000001"},
-		{chrono.Date(earlier).At(17, 00), "eod", ""},
-		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
-		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
+		{Time: chrono.Date(earlier).At(9, 00), TaskName: "working", TaskId: "SFFEAT0000001"},
+		{Time: chrono.Date(earlier).At(17, 00),TaskName: "eod", TaskId: ""},
+		{Time: chrono.Date(date).At(9, 30),  TaskName: "Designing the timelogger", TaskId: "SFFEAT0000001"},
+		{Time: chrono.Date(date).At(12, 00), TaskName: "Implementing the timelogger", TaskId: "SFFEAT0000002"},
+		{Time: chrono.Date(date).At(14, 30), TaskName: "Testing the timelogger", TaskId: "SFFEAT0000003"},
 	}
 	actual := DurationView(manipulation.Aggregate(entries, date)).Format(Ascending)
 
@@ -72,10 +72,10 @@ func TestFormatTotal2(t *testing.T) {
 	date := time.Date(2023, 5, 13, 1, 02, 0, 0, time.Local)
 	earlier := time.Date(2023, 5, 12, 14, 02, 0, 0, time.Local)
 	entries := []log.Entry{
-		{chrono.Date(earlier).At(9, 30), "dsu", ""},
-		{chrono.Date(earlier).At(10, 00), "horse riding", ""},
-		{chrono.Date(earlier).At(12, 00), "eod", ""},
-		{chrono.Date(date).At(0, 43), "early start", ""},
+		{Time: chrono.Date(earlier).At(9, 30),  TaskName: "dsu", TaskId: ""},
+		{Time: chrono.Date(earlier).At(10, 00), TaskName: "horse riding", TaskId: ""},
+		{Time: chrono.Date(earlier).At(12, 00), TaskName: "eod", TaskId: ""},
+		{Time: chrono.Date(date).At(0, 43), TaskName: "early start", TaskId: ""},
 	}
 	actual := DurationView(manipulation.Aggregate(entries, date)).Format(Descending)
 
@@ -91,12 +91,12 @@ func TestFormatTotal3(t *testing.T) {
 	date := time.Date(2023, 5, 13, 10, 02, 0, 0, time.Local)
 	earlier := time.Date(2023, 5, 12, 14, 02, 0, 0, time.Local)
 	entries := []log.Entry{
-		{chrono.Date(earlier).At(9, 30), "dsu", ""},
-		{chrono.Date(earlier).At(9, 45), "check email", ""},
-		{chrono.Date(earlier).At(10, 00), "horse riding", ""},
-		{chrono.Date(earlier).At(11, 45), "check email", ""},
-		{chrono.Date(earlier).At(12, 00), "eod", ""},
-		{chrono.Date(date).At(9, 30), "check email", ""},
+		{Time: chrono.Date(earlier).At(9, 30),  TaskName: "dsu", TaskId: ""},
+		{Time: chrono.Date(earlier).At(9, 45),  TaskName: "check email", TaskId: ""},
+		{Time: chrono.Date(earlier).At(10, 00), TaskName: "horse riding", TaskId: ""},
+		{Time: chrono.Date(earlier).At(11, 45), TaskName: "check email", TaskId: ""},
+		{Time: chrono.Date(earlier).At(12, 00), TaskName: "eod", TaskId: ""},
+		{Time: chrono.Date(date).At(9, 30), TaskName: "check email", TaskId: ""},
 	}
 	actual := DurationView(manipulation.Aggregate(entries, date)).Format(Descending)
 
