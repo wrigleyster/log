@@ -109,9 +109,9 @@ func relativeDate(date time.Time, input string) time.Time {
 		return date
 	}
 
-    finaldate := time.Date(tempDate.Year(), tempDate.Month(), tempDate.Day(), date.Hour(), date.Minute(), date.Second(), date.Nanosecond(), date.Location())
-    if finaldate.After(date) {
-        finaldate = finaldate.Add(-7*day)
-    }
-    return finaldate
+	finaldate := time.Date(tempDate.Year(), tempDate.Month(), tempDate.Day(), date.Hour(), date.Minute(), date.Second(), date.Nanosecond(), date.Location())
+	if finaldate.After(date) {
+		finaldate = finaldate.Add(-7*day)
+	}
+	return finaldate
 }

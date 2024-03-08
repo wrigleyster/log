@@ -19,11 +19,11 @@ func TestParseTime(t *testing.T) {
 }
 
 func TestParseDateTime(t *testing.T) {
-    friday := time.Date(2023,6,2,16,45,0,0,time.Local)
-    today := time.Date(2023,6,5,8,17,0,0,time.Local)
+	friday := time.Date(2023, 6, 2, 16, 45, 0, 0, time.Local)
+	today := time.Date(2023, 6, 5, 8, 17, 0, 0, time.Local)
 	entry := Entry{today, "eod at 16:45 friday", ""}.
-        parseDate().
-        parseTime()
+		parseDate().
+		parseTime()
 
 	assert.Equal(t, "eod", entry.TaskName)
 	assert.Equal(t, "Friday", entry.Time.Weekday().String())
@@ -34,8 +34,8 @@ func TestParseDateTime(t *testing.T) {
 	assert.Equal(t, friday.Day(), entry.Time.Day())
 }
 func TestRelativeDateTime(t *testing.T) {
-    friday := time.Date(2023,6,2,16,45,0,0,time.Local)
-    today := time.Date(2023,6,5,8,17,0,0,time.Local)
+	friday := time.Date(2023, 6, 2, 16, 45, 0, 0, time.Local)
+	today := time.Date(2023, 6, 5, 8, 17, 0, 0, time.Local)
 	r := relativeDate(today, "friday")
 	assert.Equal(t, "Friday", r.Weekday().String())
 	assert.Equal(t, friday.Year(), r.Year())
@@ -106,7 +106,7 @@ func TestRelativeDate(t *testing.T) {
 	assert.Equal(t, today, sunday)
 }
 func TestRelativeDate2(t *testing.T) {
-    today := time.Date(2023,6,5,8,17,0,0,time.Local)
+	today := time.Date(2023, 6, 5, 8, 17, 0, 0, time.Local)
 	assert.Equal(t, "Sunday", time.Weekday(0).String())
 	assert.Equal(t, time.Weekday(1), today.Weekday())
 
@@ -148,11 +148,11 @@ func TestParseTaskId(t *testing.T) {
 }
 
 func TestRelativeDateMonday(t *testing.T) {
-	monday    := time.Date(2023, 5, 22, 10, 54, 0, 0, time.Local)
-	tuesday   := time.Date(2023, 5, 23, 10, 54, 0, 0, time.Local)
+	monday := time.Date(2023, 5, 22, 10, 54, 0, 0, time.Local)
+	tuesday := time.Date(2023, 5, 23, 10, 54, 0, 0, time.Local)
 	wednesday := time.Date(2023, 5, 24, 10, 54, 0, 0, time.Local)
-	thursday  := time.Date(2023, 5, 25, 10, 54, 0, 0, time.Local)
-	friday    := time.Date(2023, 5, 26, 10, 54, 0, 0, time.Local)
+	thursday := time.Date(2023, 5, 25, 10, 54, 0, 0, time.Local)
+	friday := time.Date(2023, 5, 26, 10, 54, 0, 0, time.Local)
 
 	assert.Equal(t, "Monday", monday.Weekday().String())
 	assert.Equal(t, chrono.Day(monday), chrono.Day(relativeDate(tuesday, "monday")))

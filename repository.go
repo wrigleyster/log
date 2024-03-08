@@ -32,8 +32,8 @@ type Task struct {
 	Id, ExtId, TaskName, State string
 }
 type Entry struct {
-	Id, TaskId      string
-	StartedAt       time.Time
+	Id, TaskId string
+	StartedAt  time.Time
 }
 
 func (task Task) fields() []any {
