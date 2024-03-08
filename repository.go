@@ -96,7 +96,7 @@ func (repo Repository) EntryById(id string) opt.Maybe[Entry] {
 	return opt.First(repo.entryBy("id = ?", id))
 }
 func (repo Repository) EntryByTimestamp(startedAt time.Time) opt.Maybe[Entry] {
-	return opt.First(repo.entryBy("startedAt like ?", startedAt))
+	return opt.First(repo.entryBy("startedAt = ?", startedAt))
 }
 func (repo Repository) EntriesByTaskId(taskId string) []Entry {
 	return repo.entryBy("taskId = ?", taskId)

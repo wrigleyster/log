@@ -151,14 +151,15 @@ func deleteEntry() {
 	msg := log.Parse(argv)
 	var task opt.Maybe[Task]
 	if entry := db.EntryByTimestamp(msg.Time); entry.Exists {
-		if task := db.TaskById(entry.Value.Id); task.Exists {
+		if task := db.TaskById(entry.Value.TaskId); task.Exists {
 			prompt := fmt.Sprintf("Would you like to delete \"%s %s %s\" [y/N]: ", entry.Value.StartedAt, task.Value.TaskName, task.Value.ExtId)
 			if reply := strings.ToLower(Prompt(prompt)); reply == "y" {
 				db.DeleteEntry(entry.Value)
 			}
 			return
 		}
-	} else { println("trying generic") }
+	}
+	println("trying generic")
 	if msg.TaskId != "" {
 		task = db.TaskByNameAndExtId(msg.TaskName, msg.TaskId)
 	} else {
