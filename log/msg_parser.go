@@ -7,6 +7,8 @@ import (
 	"time"
 	"wlog/chrono"
 	"wlog/list"
+
+	"github.com/wrigleyster/gorm/util"
 )
 
 type Entry struct {
@@ -18,24 +20,37 @@ type Entry struct {
 func NewLogEntry(input string) Entry {
 	return Entry{time.Now(), input, ""}
 }
-
-func (entry Entry) parseTime() Entry {
-	now := entry.Time.Truncate(time.Minute)
-	words := strings.Split(entry.TaskName, " ")
-	if len(words) > 2 && words[len(words)-2] == "at" {
-		startTime := strings.Split(list.El(words, -1), ":")
+func (entry Entry) parseTime(input string) time.Time {
+		startTime := strings.Split(input, ":")
 		if 2 != len(startTime) {
-			return entry
+			return entry.Time
 		}
 		hours, err := strconv.Atoi(startTime[0])
 		if err != nil {
-			return entry
+			return entry.Time
 		}
 		minutes, err := strconv.Atoi(startTime[1])
 		if err != nil {
+			return entry.Time
+		}
+		return chrono.Date(entry.Time).At(hours, minutes)
+}
+func (entry Entry) ParseTime() Entry {
+	now := entry.Time.Truncate(time.Minute)
+	words := strings.Split(entry.TaskName, " ")
+	if len(words) > 1 && strings.Contains(words[0], ":") && !strings.HasSuffix(words[0], ":"){
+		startTime := entry.parseTime(words[0])
+		if startTime == entry.Time {
 			return entry
 		}
-		entry.Time = chrono.Date(now).At(hours, minutes)
+		entry.Time = startTime
+		entry.TaskName = strings.Join(words[1:], " ")
+	} else if len(words) > 2 && words[len(words)-2] == "at" {
+		startTime := entry.parseTime(list.El(words, -1))
+		if startTime == entry.Time {
+			return entry
+		}
+		entry.Time = startTime
 		entry.TaskName = strings.Join(list.Sl(words, 0, -2), " ")
 	} else {
 		entry.Time = now
@@ -68,6 +83,18 @@ func (entry Entry) parseDate() Entry {
 	return entry
 }
 
+func (entry Entry) parseFrontDate() Entry {
+	words := strings.Split(entry.TaskName, " ")
+	newDate := relativeDate(entry.Time, words[0])
+	newDate = absoluteDate(newDate, words[0])
+	if newDate == entry.Time {
+		return entry
+	}
+	entry.TaskName = strings.Join(words[1:], " ")
+	entry.Time = newDate
+	return entry
+}
+
 func (entry Entry) IsEOD() bool {
 	return strings.ToLower(entry.TaskName) == "eod"
 }
@@ -80,11 +107,36 @@ func Parse(argv []string) Entry {
 	input := strings.Join(argv, " ")
 	entry := NewLogEntry(input).
 		parseDate().
-		parseTime().
+		parseFrontDate().
+		ParseTime().
 		parseTaskId()
 	return entry
 }
 
+func absoluteDate(date time.Time, input string) time.Time {
+	numbers := strings.Split(input, ".")
+	if len(numbers) < 2 || 3 < len(numbers) {
+		return date
+	}
+	var year, month, day int
+	var err error
+	if len(numbers) == 2 {
+		year = date.Year()
+		month, err = strconv.Atoi(numbers[0])
+		util.Log(err, "unable to parse month")
+		day, err = strconv.Atoi(numbers[1])
+		util.Log(err, "unable to parse day")
+	} else {
+		year, err = strconv.Atoi(numbers[0])
+		util.Log(err, "unable to parse year")
+		month, err = strconv.Atoi(numbers[1])
+		util.Log(err, "unable to parse month")
+		day, err = strconv.Atoi(numbers[2])
+		util.Log(err, "unable to parse day")
+	}
+	return time.Date(year, time.Month(month), day, date.Hour(), date.Minute(), date.Second(), date.Nanosecond(), date.Location())
+
+}
 func relativeDate(date time.Time, input string) time.Time {
 	tempDate := time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), date.Minute(), date.Second(), date.Nanosecond(), time.UTC)
 	day := time.Hour * 24

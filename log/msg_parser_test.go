@@ -1,14 +1,15 @@
 package log
 
 import (
-	"github.com/stretchr/testify/assert"
-	"wlog/chrono"
 	"testing"
 	"time"
+	"wlog/chrono"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseTime(t *testing.T) {
-	entry := NewLogEntry("init at 9:30").parseTime()
+	entry := NewLogEntry("init at 9:30").ParseTime()
 
 	assert.Equal(t, "init", entry.TaskName)
 	assert.Equal(t, 9, entry.Time.Hour())
@@ -23,7 +24,40 @@ func TestParseDateTime(t *testing.T) {
 	today := time.Date(2023, 6, 5, 8, 17, 0, 0, time.Local)
 	entry := Entry{today, "eod at 16:45 friday", ""}.
 		parseDate().
-		parseTime()
+		parseFrontDate().
+		ParseTime()
+
+	assert.Equal(t, "eod", entry.TaskName)
+	assert.Equal(t, "Friday", entry.Time.Weekday().String())
+	assert.Equal(t, friday.Hour(), entry.Time.Hour())
+	assert.Equal(t, friday.Minute(), entry.Time.Minute())
+	assert.Equal(t, friday.Year(), entry.Time.Year())
+	assert.Equal(t, friday.Month(), entry.Time.Month())
+	assert.Equal(t, friday.Day(), entry.Time.Day())
+}
+func TestParseFrontDateTime(t *testing.T) {
+	friday := time.Date(2023, 6, 2, 16, 45, 0, 0, time.Local)
+	today := time.Date(2023, 6, 5, 8, 17, 0, 0, time.Local)
+	entry := Entry{today, "friday 16:45 eod", ""}.
+		parseDate().
+		parseFrontDate().
+		ParseTime()
+
+	assert.Equal(t, "eod", entry.TaskName)
+	assert.Equal(t, "Friday", entry.Time.Weekday().String())
+	assert.Equal(t, friday.Hour(), entry.Time.Hour())
+	assert.Equal(t, friday.Minute(), entry.Time.Minute())
+	assert.Equal(t, friday.Year(), entry.Time.Year())
+	assert.Equal(t, friday.Month(), entry.Time.Month())
+	assert.Equal(t, friday.Day(), entry.Time.Day())
+}
+func TestParseFullFrontDateTime(t *testing.T) {
+	friday := time.Date(2023, 6, 2, 16, 45, 0, 0, time.Local)
+	today := time.Date(2023, 6, 5, 8, 17, 0, 0, time.Local)
+	entry := Entry{today, "2023.6.2 16:45 eod", ""}.
+		parseDate().
+		parseFrontDate().
+		ParseTime()
 
 	assert.Equal(t, "eod", entry.TaskName)
 	assert.Equal(t, "Friday", entry.Time.Weekday().String())
@@ -46,7 +80,8 @@ func TestRelativeDateTime(t *testing.T) {
 func TestParseDate_yesterday(t *testing.T) {
 	entry := NewLogEntry("working on cool stuff at 8:40 yesterday").
 		parseDate().
-		parseTime()
+		parseFrontDate().
+		ParseTime()
 
 	yesterday := time.Now().Add(-time.Hour * 24)
 	assert.Equal(t, "working on cool stuff", entry.TaskName)
@@ -60,7 +95,8 @@ func TestParseDate_yesterday(t *testing.T) {
 func TestParseDate_monday(t *testing.T) {
 	entry := NewLogEntry("working on cool stuff at 8:40 monday").
 		parseDate().
-		parseTime()
+		parseFrontDate().
+		ParseTime()
 
 	monday := time.Now().Truncate(time.Hour * 24 * 7)
 	assert.Equal(t, "working on cool stuff", entry.TaskName)
@@ -165,4 +201,34 @@ func TestRelativeDateMonday(t *testing.T) {
 	assert.Equal(t, chrono.Day(tuesday), chrono.Day(relativeDate(wednesday, "tuesday")))
 	assert.Equal(t, chrono.Day(tuesday), chrono.Day(relativeDate(thursday, "tuesday")))
 	assert.Equal(t, chrono.Day(tuesday), chrono.Day(relativeDate(friday, "tuesday")))
+}
+func TestAbsoluteDate(t *testing.T) {
+	monday := time.Date(2023, 5, 22, 10, 54, 0, 0, time.Local)
+	assert.Equal(t, "Monday", monday.Weekday().String())
+	assert.Equal(t, chrono.Day(monday), chrono.Day(absoluteDate(monday, "2023.5.22")))
+}
+func TestFrontDate(t *testing.T) {
+	monday := time.Date(2023, 5, 22, 10, 54, 0, 0, time.Local)
+	entry := Entry{time.Now(), "2023.5.22 10:54 ducks are winners", ""}
+
+	entry = entry.parseFrontDate()
+	
+	assert.Equal(t, monday.Day(), entry.Time.Day())
+	assert.Equal(t, monday.Month(), entry.Time.Month())
+	assert.Equal(t, monday.Year(), entry.Time.Year())
+	assert.Equal(t, monday.YearDay(), entry.Time.YearDay())
+	assert.Equal(t, "10:54 ducks are winners", entry.TaskName)
+}
+func TestFrontTime(t *testing.T) {
+	monday := time.Date(2023, 5, 22, 10, 54, 0, 0, time.Local)
+	entry := Entry{chrono.Date(monday).At(0,0), "10:54 ducks are winners", ""}
+	
+
+	entry = entry.ParseTime()
+	
+	assert.Equal(t, monday.Hour(), entry.Time.Hour())
+	assert.Equal(t, monday.Minute(), entry.Time.Minute())
+	assert.Equal(t, monday.Location(), entry.Time.Location())
+	assert.Equal(t, "ducks are winners", entry.TaskName)
+	assert.Equal(t, monday, entry.Time)
 }
