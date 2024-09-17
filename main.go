@@ -2,15 +2,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/wrigleyster/gorm/util"
-	"github.com/wrigleyster/opt"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+	"wlog/chrono"
 	"wlog/formatter"
 	"wlog/log"
 	"wlog/manipulation"
+
+	"github.com/wrigleyster/gorm/util"
+	"github.com/wrigleyster/opt"
 )
 
 func getDb() Repository {
@@ -60,6 +62,22 @@ func printLog() {
 func printLogDiff() {
 	db := getDb()
 	entries := db.getLogLines(getIntArg(2, 15))
+	view := formatter.DurationView(manipulation.Aggregate(entries, time.Now()))
+	println(view.Format(formatter.Ascending))
+}
+func printDailyLog() {
+	db := getDb()
+	words := strings.Split(getArg(2, ""), " ")
+	date := chrono.ParseDate(words[0], time.Now())
+	entries := db.getDailyLog(date)
+	view := formatter.AgendaView(manipulation.Accumulate(entries, time.Now()))
+	println(view.Format(formatter.Ascending))
+}
+func printDailyLogDiff() {
+	db := getDb()
+	words := strings.Split(getArg(2, ""), " ")
+	date := chrono.ParseDate(words[0], time.Now())
+	entries := db.getDailyLog(date)
 	view := formatter.DurationView(manipulation.Aggregate(entries, time.Now()))
 	println(view.Format(formatter.Ascending))
 }
@@ -182,6 +200,10 @@ func parseArgs(argv []string) func() {
 		return printLog
 	} else if argv[0] == "-ld" {
 		return printLogDiff
+	} else if argv[0] == "-ll" {
+		return printDailyLog
+	} else if argv[0] == "-lld" {
+		return printDailyLogDiff
 	} else if argv[0] == "-lt" {
 		return printTasks
 	} else if argv[0] == "-s" {
