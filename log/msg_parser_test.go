@@ -22,7 +22,7 @@ func TestParseTime(t *testing.T) {
 func TestParseDateTime(t *testing.T) {
 	friday := time.Date(2023, 6, 2, 16, 45, 0, 0, time.Local)
 	today := time.Date(2023, 6, 5, 8, 17, 0, 0, time.Local)
-	entry := Entry{today, "eod at 16:45 friday", ""}.
+	entry := Entry{today, nil, "eod at 16:45 friday", ""}.
 		parseDate().
 		parseFrontDate().
 		ParseTime()
@@ -38,7 +38,7 @@ func TestParseDateTime(t *testing.T) {
 func TestParseFrontDateTime(t *testing.T) {
 	friday := time.Date(2023, 6, 2, 16, 45, 0, 0, time.Local)
 	today := time.Date(2023, 6, 5, 8, 17, 0, 0, time.Local)
-	entry := Entry{today, "friday 16:45 eod", ""}.
+	entry := Entry{today, nil, "friday 16:45 eod", ""}.
 		parseDate().
 		parseFrontDate().
 		ParseTime()
@@ -54,7 +54,7 @@ func TestParseFrontDateTime(t *testing.T) {
 func TestParseFullFrontDateTime(t *testing.T) {
 	friday := time.Date(2023, 6, 2, 16, 45, 0, 0, time.Local)
 	today := time.Date(2023, 6, 5, 8, 17, 0, 0, time.Local)
-	entry := Entry{today, "2023.6.2 16:45 eod", ""}.
+	entry := Entry{today, nil, "2023.6.2 16:45 eod", ""}.
 		parseDate().
 		parseFrontDate().
 		ParseTime()
@@ -176,7 +176,7 @@ func TestRelativeDate2(t *testing.T) {
 }
 
 func TestParseTaskId(t *testing.T) {
-	entry := Entry{time.Now(), "I want to work on SFFEAT001234", ""}
+	entry := Entry{time.Now(), nil, "I want to work on SFFEAT001234", ""}
 
 	entry = entry.parseTaskId()
 
@@ -209,7 +209,7 @@ func TestAbsoluteDate(t *testing.T) {
 }
 func TestFrontDate(t *testing.T) {
 	monday := time.Date(2023, 5, 22, 10, 54, 0, 0, time.Local)
-	entry := Entry{time.Now(), "2023.5.22 10:54 ducks are winners", ""}
+	entry := Entry{time.Now(), nil, "2023.5.22 10:54 ducks are winners", ""}
 
 	entry = entry.parseFrontDate()
 	
@@ -221,7 +221,7 @@ func TestFrontDate(t *testing.T) {
 }
 func TestFrontTime(t *testing.T) {
 	monday := time.Date(2023, 5, 22, 10, 54, 0, 0, time.Local)
-	entry := Entry{chrono.Date(monday).At(0,0), "10:54 ducks are winners", ""}
+	entry := Entry{chrono.Date(monday).At(0,0), nil, "10:54 ducks are winners", ""}
 	
 
 	entry = entry.ParseTime()

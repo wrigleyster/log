@@ -11,9 +11,9 @@ import (
 func TestAccumulateWithoutEOD(t *testing.T) {
 	date := chrono.Date(time.Now()).At(15, 00)
 	entries := []log.Entry{
-		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
-		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
+		{chrono.Date(date).At(9, 30), nil, "Designing the timelogger", "SFFEAT0000001"},
+		{chrono.Date(date).At(12, 00), nil, "Implementing the timelogger", "SFFEAT0000002"},
+		{chrono.Date(date).At(14, 30), nil, "Testing the timelogger", "SFFEAT0000003"},
 	}
 	actual := Accumulate(entries, date)
 
@@ -30,10 +30,10 @@ func TestAccumulateWithoutEOD(t *testing.T) {
 func TestAccumulateWithEOD(t *testing.T) {
 	date := chrono.Date(time.Now()).At(15, 00)
 	entries := []log.Entry{
-		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
-		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
-		{chrono.Date(date).At(15, 00), "eod", ""},
+		{chrono.Date(date).At(9, 30), nil, "Designing the timelogger", "SFFEAT0000001"},
+		{chrono.Date(date).At(12, 00), nil, "Implementing the timelogger", "SFFEAT0000002"},
+		{chrono.Date(date).At(14, 30), nil, "Testing the timelogger", "SFFEAT0000003"},
+		{chrono.Date(date).At(15, 00), nil, "eod", ""},
 	}
 	actual := Accumulate(entries, date)
 
@@ -52,11 +52,11 @@ func TestAccumulateWithEodAndNewDay(t *testing.T) {
 	now := chrono.Date(time.Now()).At(15, 00)
 	yesterday := now.Add(-24 * time.Hour)
 	entries := []log.Entry{
-		{chrono.Date(yesterday).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
-		{chrono.Date(yesterday).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
-		{chrono.Date(yesterday).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
-		{chrono.Date(yesterday).At(15, 00), "eod", ""},
-		{chrono.Date(now).At(01, 00), "early start", ""},
+		{chrono.Date(yesterday).At(9, 30), nil, "Designing the timelogger", "SFFEAT0000001"},
+		{chrono.Date(yesterday).At(12, 00), nil, "Implementing the timelogger", "SFFEAT0000002"},
+		{chrono.Date(yesterday).At(14, 30), nil, "Testing the timelogger", "SFFEAT0000003"},
+		{chrono.Date(yesterday).At(15, 00), nil, "eod", ""},
+		{chrono.Date(now).At(01, 00), nil, "early start", ""},
 	}
 	actual := Accumulate(entries, now)
 

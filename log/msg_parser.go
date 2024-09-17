@@ -11,12 +11,13 @@ import (
 
 type Entry struct {
 	Time     time.Time
+	EndTime  *time.Time
 	TaskName string
 	TaskId   string
 }
 
 func NewLogEntry(input string) Entry {
-	return Entry{time.Now(), input, ""}
+	return Entry{time.Now(), nil, input, ""}
 }
 func (entry Entry) ParseTime() Entry {
 	now := entry.Time.Truncate(time.Minute)

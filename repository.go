@@ -157,6 +157,25 @@ func (repo Repository) getDailyLog(date time.Time) [] log.Entry {
 	})
 	return entries
 }
+func (repo Repository) getDeltas(count int) []log.Entry {
+	var entries []log.Entry
+	repo.db.Orm(func(db *sql.DB) {
+		stmt, err := db.Prepare("SELECT task.taskName, task.extId, startedAt, LEAD(started_at) OVER (ORDER BY startedAt) AS endedAt from task INNER JOIN entry ON task.id = entry.taskId ORDER BY entry.startedAt DESC limit ?")
+		util.Log(err)
+		row, err := stmt.Query(count)
+		util.Log(err)
+		for row.Next() {
+			entry := log.Entry {}
+			var endTime time.Time
+			err = row.Scan(&entry.TaskName, &entry.TaskId, &entry.Time, &endTime)
+			entry.EndTime = &endTime
+			util.Log(err)
+			entries = append(entries, entry)
+		}
+	})
+	list.Reverse(entries)
+	return entries
+}
 func (repo Repository) getTasks(count int) []Task {
 	var tasks []Task
 	repo.db.Orm(func(db *sql.DB) {
