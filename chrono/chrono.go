@@ -115,6 +115,8 @@ func RelativeDate(date time.Time, input string) time.Time {
 	day := time.Hour * 24
 	switch input {
 	case "yesterday":
+		fallthrough
+	case "y":
 		tempDate = tempDate.Add(-day)
 	case "monday":
 		tempDate = tempDate.Truncate(7 * day)

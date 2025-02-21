@@ -83,7 +83,22 @@ func TestParseDate_yesterday(t *testing.T) {
 		parseFrontDate().
 		ParseTime()
 
-	yesterday := time.Now().Add(-time.Hour * 24)
+	yesterday := time.Now().AddDate(0, 0, -1)
+	assert.Equal(t, "working on cool stuff", entry.TaskName)
+	assert.Equal(t, 8, entry.Time.Hour())
+	assert.Equal(t, 40, entry.Time.Minute())
+	assert.Equal(t, yesterday.Year(), entry.Time.Year())
+	assert.Equal(t, yesterday.Month(), entry.Time.Month())
+	assert.Equal(t, yesterday.Day(), entry.Time.Day())
+}
+
+func TestParseDate_y(t *testing.T) {
+	entry := NewLogEntry("working on cool stuff at 8:40 y").
+		parseDate().
+		parseFrontDate().
+		ParseTime()
+
+	yesterday := time.Now().AddDate(0, 0, -1)
 	assert.Equal(t, "working on cool stuff", entry.TaskName)
 	assert.Equal(t, 8, entry.Time.Hour())
 	assert.Equal(t, 40, entry.Time.Minute())
