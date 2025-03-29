@@ -10,13 +10,14 @@ import (
 	"wlog/formatter"
 	"wlog/log"
 	"wlog/manipulation"
+	"wlog/model"
 
 	"github.com/wrigleyster/gorm/util"
 	"github.com/wrigleyster/opt"
 )
 
-func getDb() Repository {
-	db := Seed("sqlite.db")
+func getDb() model.Repository {
+	db := model.Seed("sqlite.db")
 	db.CleanChildlessParents()
 	return db
 }
@@ -54,14 +55,14 @@ func printUsage() {
 }
 func printLog() {
 	db := getDb()
-	entries := db.getLogLines(getIntArg(2, 15))
+	entries := db.GetLogLines(getIntArg(2, 15))
 	fmt.Printf("%d entries:\n", len(entries))
 	view := formatter.AgendaView(manipulation.Accumulate(entries, time.Now()))
 	println(view.Format(formatter.Ascending))
 }
 func printLogDiff() {
 	db := getDb()
-	entries := db.getLogLines(getIntArg(2, 15))
+	entries := db.GetLogLines(getIntArg(2, 15))
 	view := formatter.DurationView(manipulation.Aggregate(entries, time.Now()))
 	println(view.Format(formatter.Ascending))
 }
@@ -69,7 +70,7 @@ func printDailyLog() {
 	db := getDb()
 	words := strings.Split(getArg(2, ""), " ")
 	date := chrono.ParseDate(words[0], time.Now())
-	entries := db.getDailyLog(date)
+	entries := db.GetDailyLog(date)
 	view := formatter.AgendaView(manipulation.Accumulate(entries, time.Now()))
 	println(view.Format(formatter.Ascending))
 }
@@ -77,18 +78,18 @@ func printDailyLogDiff() {
 	db := getDb()
 	words := strings.Split(getArg(2, ""), " ")
 	date := chrono.ParseDate(words[0], time.Now())
-	entries := db.getDailyLog(date)
+	entries := db.GetDailyLog(date)
 	view := formatter.DurationView(manipulation.Aggregate(entries, time.Now()))
 	println(view.Format(formatter.Ascending))
 }
 func printTasks() {
 	db := getDb()
 	count := getOptionalIntArg(2, 15)
-	var tasks []Task
+	var tasks []model.Task
 	if count.Exists {
-		tasks = db.getTasks(count.Value)
+		tasks = db.GetTasks(count.Value)
 	} else {
-		tasks = db.findTasks(strings.Join(os.Args[2:], " "))
+		tasks = db.FindTasks(strings.Join(os.Args[2:], " "))
 	}
 	for _, task := range tasks {
 		fmt.Printf("%s %s\n", task.TaskName, task.ExtId)
@@ -120,12 +121,12 @@ func add() {
 	println("add")
 	if msg.TaskId != "" {
 		if task := db.TaskByNameAndExtId(msg.TaskName, msg.TaskId); task.Exists {
-			entry := Entry{TaskId: task.Value.Id, StartedAt: msg.Time}
+			entry := model.Entry{TaskId: task.Value.Id, StartedAt: msg.Time}
 			db.SaveEntry(&entry)
 		} else {
-			task := Task{ExtId: msg.TaskId, TaskName: msg.TaskName}
+			task := model.Task{ExtId: msg.TaskId, TaskName: msg.TaskName}
 			db.SaveTask(&task)
-			entry := Entry{TaskId: task.Id, StartedAt: msg.Time}
+			entry := model.Entry{TaskId: task.Id, StartedAt: msg.Time}
 			db.SaveEntry(&entry)
 		}
 	} else {
@@ -134,14 +135,14 @@ func add() {
 			util.Log("more than one task with that name already exists")
 			return
 		}
-		var task Task
+		var task model.Task
 		if len(tasks) == 1 {
 			task = tasks[0]
 		} else {
-			task = Task{TaskName: msg.TaskName}
+			task = model.Task{TaskName: msg.TaskName}
 		}
 		db.SaveTask(&task)
-		entry := Entry{TaskId: task.Id, StartedAt: msg.Time}
+		entry := model.Entry{TaskId: task.Id, StartedAt: msg.Time}
 		db.SaveEntry(&entry)
 	}
 }
@@ -167,7 +168,7 @@ func deleteEntry() {
 	argv := os.Args[2:]
 	db := getDb()
 	msg := log.Parse(argv)
-	var task opt.Maybe[Task]
+	var task opt.Maybe[model.Task]
 	if entry := db.EntryByTimestamp(msg.Time); entry.Exists {
 		if task := db.TaskById(entry.Value.TaskId); task.Exists {
 			prompt := fmt.Sprintf("Would you like to delete \"%s %s %s\" [y/N]: ", entry.Value.StartedAt, task.Value.TaskName, task.Value.ExtId)

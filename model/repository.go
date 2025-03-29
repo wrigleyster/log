@@ -1,4 +1,4 @@
-package main
+package model
 
 import (
 	"database/sql"
@@ -123,7 +123,7 @@ func (repo Repository) entryBy(predicate string, value ...any) []Entry {
 	}
 	return entries
 }
-func (repo Repository) getLogLines(count int) []log.Entry {
+func (repo Repository) GetLogLines(count int) []log.Entry {
 	var entries []log.Entry
 	repo.db.Orm(func(db *sql.DB) {
 		stmt, err := db.Prepare("SELECT startedAt, task.taskName, task.extId FROM task INNER JOIN entry ON task.id = entry.taskId ORDER BY entry.startedAt DESC limit ?")
@@ -140,7 +140,7 @@ func (repo Repository) getLogLines(count int) []log.Entry {
 	list.Reverse(entries)
 	return entries
 }
-func (repo Repository) getDailyLog(date time.Time) [] log.Entry {
+func (repo Repository) GetDailyLog(date time.Time) [] log.Entry {
 	date = chrono.Date(date).At(0,0)
 	var entries [] log.Entry
 	repo.db.Orm(func(db *sql.DB) {
@@ -157,7 +157,7 @@ func (repo Repository) getDailyLog(date time.Time) [] log.Entry {
 	})
 	return entries
 }
-func (repo Repository) getTasks(count int) []Task {
+func (repo Repository) GetTasks(count int) []Task {
 	var tasks []Task
 	repo.db.Orm(func(db *sql.DB) {
 		stmt, err := db.Prepare("SELECT * FROM task WHERE state != 'done' LIMIT ?")
@@ -170,7 +170,7 @@ func (repo Repository) getTasks(count int) []Task {
 	})
 	return tasks
 }
-func (repo Repository) findTasks(nameOrExtId string) []Task {
+func (repo Repository) FindTasks(nameOrExtId string) []Task {
 	query := "%" + nameOrExtId + "%"
 	return repo.taskBy("state != 'done' and taskName like ? or extId like ?", query, query)
 }

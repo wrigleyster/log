@@ -1,4 +1,4 @@
-package main
+package model
 
 import (
 	"os"
@@ -53,12 +53,12 @@ func TestCleanupChildlessParents(t *testing.T) {
 	repo.SaveTask(&childless)
 
 
-	assert.Equal(t, 2, len(repo.getTasks(10)))
+	assert.Equal(t, 2, len(repo.GetTasks(10)))
 	repo.CleanChildlessParents()
-	assert.Equal(t, 1, len(repo.getTasks(10)))
+	assert.Equal(t, 1, len(repo.GetTasks(10)))
 	repo.DeleteEntry(entry)
 	repo.CleanChildlessParents()
-	assert.Equal(t, 0, len(repo.getTasks(10)))
+	assert.Equal(t, 0, len(repo.GetTasks(10)))
 
 }
 func TestEntryByTimestamp(t *testing.T) {
