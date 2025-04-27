@@ -140,9 +140,9 @@ func (repo Repository) GetLogLines(count int) []log.Entry {
 	list.Reverse(entries)
 	return entries
 }
-func (repo Repository) GetDailyLog(date time.Time) [] log.Entry {
-	date = chrono.Date(date).At(0,0)
-	var entries [] log.Entry
+func (repo Repository) GetDailyLog(date time.Time) []log.Entry {
+	date = chrono.Date(date).At(0, 0)
+	var entries []log.Entry
 	repo.db.Orm(func(db *sql.DB) {
 		stmt, err := db.Prepare("SELECT startedAt, task.taskName, task.extId FROM task INNER JOIN entry ON task.id = entry.taskId WHERE ? < startedAt and startedAt < ?")
 		util.Log(err)

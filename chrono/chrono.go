@@ -80,9 +80,7 @@ func (d Duration) Add(e Duration) Duration {
 	return Duration(int64(d) + int64(e))
 }
 
-
 /////////////////
-
 
 func AbsoluteDate(date time.Time, input string) time.Time {
 	numbers := strings.Split(input, ".")
@@ -134,7 +132,7 @@ func RelativeDate(date time.Time, input string) time.Time {
 
 	finaldate := time.Date(tempDate.Year(), tempDate.Month(), tempDate.Day(), date.Hour(), date.Minute(), date.Second(), date.Nanosecond(), date.Location())
 	if finaldate.After(date) {
-		finaldate = finaldate.Add(-7*day)
+		finaldate = finaldate.Add(-7 * day)
 	}
 	return finaldate
 }
@@ -144,7 +142,7 @@ func ParseDate(dateString string, fallback time.Time) time.Time {
 	return AbsoluteDate(date, dateString)
 }
 func ParseOptionalDate(dateString string, fallback time.Time) opt.Maybe[time.Time] {
-	today := Date(time.Now()).At(0,0)
+	today := Date(time.Now()).At(0, 0)
 	date := ParseDate(dateString, today)
 	if today == date {
 		return opt.No[time.Time]()

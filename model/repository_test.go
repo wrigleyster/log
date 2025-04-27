@@ -18,9 +18,9 @@ func TestSaveAndRecover(t *testing.T) {
 	repo := Seed(dbname)
 
 	entry := Entry{
-		Id:              "",
-		TaskId:          "SFFEAT012345",
-		StartedAt:       time.Now(),
+		Id:        "",
+		TaskId:    "SFFEAT012345",
+		StartedAt: time.Now(),
 	}
 	repo.SaveEntry(&entry)
 	t.Logf("entry = %s", entry.Id)
@@ -38,12 +38,12 @@ func TestCleanupChildlessParents(t *testing.T) {
 	repo := Seed(dbname)
 
 	task := Task{
-		Id: "",
+		Id:       "",
 		TaskName: "A",
 	}
 	repo.SaveTask(&task)
 	entry := Entry{
-		Id: "",
+		Id:     "",
 		TaskId: task.Id,
 	}
 	repo.SaveEntry(&entry)
@@ -51,7 +51,6 @@ func TestCleanupChildlessParents(t *testing.T) {
 		TaskName: "B",
 	}
 	repo.SaveTask(&childless)
-
 
 	assert.Equal(t, 2, len(repo.GetTasks(10)))
 	repo.CleanChildlessParents()
@@ -69,19 +68,19 @@ func TestEntryByTimestamp(t *testing.T) {
 	})
 	repo := Seed(dbname)
 	task := Task{
-		Id: "",
+		Id:       "",
 		TaskName: "A",
 	}
 	repo.SaveTask(&task)
 	entry := Entry{
-		Id: "",
-		TaskId: task.Id,
+		Id:        "",
+		TaskId:    task.Id,
 		StartedAt: time.Now().Truncate(time.Minute),
 	}
 	repo.SaveEntry(&entry)
 
 	fetched := repo.EntryByTimestamp(time.Now().Truncate(time.Minute))
 	//assert.Equal(t, 4, fetched.Value.StartedAt)
-	
+
 	assert.True(t, fetched.Exists)
 }

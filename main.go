@@ -40,7 +40,7 @@ func getOptionalIntArg(i, fallback int) opt.Maybe[int] {
 		if i, e := strconv.Atoi(os.Args[i]); e == nil {
 			return opt.Some(i)
 		}
-        return opt.No[int]()
+		return opt.No[int]()
 	}
 	return opt.Some(fallback)
 }
@@ -96,7 +96,7 @@ func printTasks() {
 	}
 }
 func Prompt(prompt ...string) string {
-	for _,msg := range prompt {
+	for _, msg := range prompt {
 		print(msg)
 	}
 	var reply string
