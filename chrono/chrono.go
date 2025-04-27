@@ -34,6 +34,10 @@ func (d Date) Day() string {
 	date := time.Time(d)
 	return fmt.Sprintf("%s %d %s", date.Weekday().String(), date.Day(), date.Month())
 }
+func (d Date) Iso() string {
+	date := time.Time(d)
+	return date.Format("2006.01.02")
+}
 
 type Day time.Time // todo consolidate Day and Date
 

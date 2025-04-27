@@ -74,9 +74,19 @@ func (repo Repository) Save(entry log.Entry) {
 	res := repo.db.From("task").
 		Where("extId = ? or taskName = ?", entry.TaskId, entry.TaskName).
 		Select("id")
-	res.Next()
-	taskid := uuid.NewString()
-	uuid.New().ID()
+	var taskid string
+	if res.Next() {
+		err := res.Scan(&taskid)
+		util.Log(err)
+		if res.Next() {
+			panic("duplicate task")
+		}
+		err = res.Close()
+		util.Log(err)
+	} else {
+		taskid = uuid.NewString()
+	}
+
 	repo.db.From("task").Replace(taskid, entry.TaskId, entry.TaskName, "")
 	repo.db.From("entry").Replace(uuid.NewString(), taskid, entry.Time.String())
 

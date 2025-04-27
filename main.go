@@ -11,6 +11,7 @@ import (
 	"wlog/log"
 	"wlog/manipulation"
 	"wlog/model"
+	"wlog/verifier"
 
 	"github.com/wrigleyster/gorm/util"
 	"github.com/wrigleyster/opt"
@@ -195,6 +196,12 @@ func deleteEntry() {
 	}
 	fmt.Println("unable to find entry.")
 }
+func verify() {
+	v := verifier.New(getDb())
+	if v.SixMonths() {
+		fmt.Println("Valid")
+	}
+}
 func parseArgs(argv []string) func() {
 	if len(argv) == 0 ||
 		argv[0] == "-l" {
@@ -211,6 +218,8 @@ func parseArgs(argv []string) func() {
 		return setId
 	} else if argv[0] == "-dd" {
 		return deleteEntry
+	} else if argv[0] == "-x" {
+		return verify
 	} else if argv[0] == "-h" {
 		return printUsage
 	} else if argv[0] == os.Args[0] {
