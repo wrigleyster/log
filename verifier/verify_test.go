@@ -19,7 +19,7 @@ func TestWeekday(t *testing.T) {
 	})
 	repo := model.Seed(dbname)
 
-	v := New(repo)
+	v := New(&repo)
 	monday := time.Date(2025, time.January, 6, 1, 1, 1, 1, time.UTC)
 	tuesday := monday.AddDate(0, 0, 1)
 	wednesday := monday.AddDate(0, 0, 2)
@@ -45,7 +45,7 @@ func TestBegun(t *testing.T) {
 		util.Log(err)
 	})
 	repo := model.Seed(dbname)
-	v := New(repo)
+	v := New(&repo)
 	monday := time.Date(2025, time.January, 6, 1, 1, 1, 1, time.UTC)
 
 	assert.False(t, v.began(monday))

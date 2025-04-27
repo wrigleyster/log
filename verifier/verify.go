@@ -8,10 +8,10 @@ import (
 )
 
 type Verifier struct {
-	Repo model.Repository
+	Repo *model.Repository
 }
 
-func New(repo model.Repository) Verifier {
+func New(repo *model.Repository) Verifier {
 	return Verifier{Repo: repo}
 }
 
@@ -24,15 +24,15 @@ func (v Verifier) SixMonths() bool {
 			continue
 		}
 		if !v.began(start) {
-			log.Printf("%v: Missing data.", chrono.Date(start).Iso())
+			log.Printf("%v : Missing", chrono.Date(start).Iso())
 			valid = false
 		} else {
 			if !v.eod(start) {
-				log.Printf("%v: Incomplete data. eod missing.", chrono.Date(start).Iso())
+				log.Printf("%v : Incomplete: no eod", chrono.Date(start).Iso())
 				valid = false
 			}
 			if !v.lunch(start) {
-				log.Printf("%v: Incomplete data. Forgot lunch.", chrono.Date(start).Iso())
+				log.Printf("%v : Incomplete: no lunch", chrono.Date(start).Iso())
 				valid = false
 			}
 		}
