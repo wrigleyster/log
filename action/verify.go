@@ -7,8 +7,7 @@ import (
 )
 
 func Verify(db *model.Repository, _ Argv) {
-	v := verifier.New(db)
-	if v.SixMonths() {
+	if verifier.SixMonths(db) {
 		fmt.Println("Valid")
 	}
 }
