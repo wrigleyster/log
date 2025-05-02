@@ -43,6 +43,12 @@ func parseArgs(argv action.Argv) (func(db *model.Repository, argv action.Argv), 
 		return printUsage, os.Args
 	} else if argv[0] == os.Args[0] {
 		return printUsage, os.Args
+	} else if argv[0] == "-af" {
+		return action.AddFerie, os.Args[2:]
+	} else if argv[0] == "-ah" {
+		return action.AddHelligdag, os.Args[2:]
+	} else if argv[0] == "-as" {
+		return action.AddSickDay, os.Args[2:]
 	} else {
 		return action.Add, os.Args[1:]
 	}

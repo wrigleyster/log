@@ -31,6 +31,9 @@ func (v Verifier) SixMonths() bool {
 				log.Printf("%v : Incomplete: no eod", chrono.Date(start).Iso())
 				valid = false
 			}
+			if v.ferie(start) || v.helligdag(start) || v.sickday(start) {
+				continue
+			}
 			if !v.lunch(start) {
 				log.Printf("%v : Incomplete: no lunch", chrono.Date(start).Iso())
 				valid = false
@@ -43,25 +46,31 @@ func (v Verifier) SixMonths() bool {
 func (v Verifier) weekday(day time.Time) bool {
 	return day.Weekday() != time.Saturday && day.Weekday() != time.Sunday
 }
+func (v Verifier) hasEntry(day time.Time, title string) bool {
+	log := v.Repo.GetDailyLog(day)
+	for _, e := range log {
+		if e.TaskName == title {
+			return true
+		}
+	}
+	return false
+}
 func (v Verifier) began(day time.Time) bool {
 	log := v.Repo.GetDailyLog(day)
 	return len(log) > 0
 }
 func (v Verifier) eod(day time.Time) bool {
-	log := v.Repo.GetDailyLog(day)
-	for _, e := range log {
-		if e.TaskName == "eod" {
-			return true
-		}
-	}
-	return false
+	return v.hasEntry(day, "eod")
 }
 func (v Verifier) lunch(day time.Time) bool {
-	log := v.Repo.GetDailyLog(day)
-	for _, e := range log {
-		if e.TaskName == "lunch" {
-			return true
-		}
-	}
-	return false
+	return v.hasEntry(day, "lunch")
+}
+func (v Verifier) helligdag(day time.Time) bool {
+	return v.hasEntry(day, "helligdag")
+}
+func (v Verifier) ferie(day time.Time) bool {
+	return v.hasEntry(day, "ferie")
+}
+func (v Verifier) sickday(day time.Time) bool {
+	return v.hasEntry(day, "syg")
 }

@@ -2,8 +2,9 @@ package action
 
 import (
 	"fmt"
-	"github.com/wrigleyster/gorm/util"
+	"strings"
 	"time"
+	"wlog/chrono"
 	"wlog/log"
 	"wlog/model"
 )
@@ -18,30 +19,27 @@ func Add(db *model.Repository, argv Argv) {
 		warnOrDie("That event is in the future.")
 	}
 	println("add")
-	if msg.ExtId != "" {
-		if task := db.TaskByNameAndExtId(msg.TaskName, msg.ExtId); task.Exists {
-			entry := model.Entry{TaskId: task.Value.Id, StartedAt: msg.Time}
-			db.SaveEntry(&entry)
-		} else {
-			task := model.Task{ExtId: msg.ExtId, TaskName: msg.TaskName}
-			db.SaveTask(&task)
-			entry := model.Entry{TaskId: task.Id, StartedAt: msg.Time}
-			db.SaveEntry(&entry)
-		}
-	} else {
-		tasks := db.TasksByName(msg.TaskName)
-		if len(tasks) > 1 {
-			util.Log("more than one task with that name already exists")
-			return
-		}
-		var task model.Task
-		if len(tasks) == 1 {
-			task = tasks[0]
-		} else {
-			task = model.Task{TaskName: msg.TaskName}
-		}
-		db.SaveTask(&task)
-		entry := model.Entry{TaskId: task.Id, StartedAt: msg.Time}
-		db.SaveEntry(&entry)
+	log.Add(db, msg)
+}
+func addSpecialDay(db *model.Repository, argv Argv, dayType string) {
+	input := strings.Join(argv, " ") + " " + dayType
+	special := log.Parse(strings.Split(input, " "))
+	if special.TaskName != dayType {
+		die("invalid date")
 	}
+	special.Time = chrono.Date(special.Time).At(9, 00)
+	log.Add(db, special)
+	input = strings.Join(argv, " ") + " eod"
+	eod := log.Parse(strings.Split(input, " "))
+	eod.Time = chrono.Date(eod.Time).At(16, 24)
+	log.Add(db, eod)
+}
+func AddSickDay(db *model.Repository, argv Argv) {
+	addSpecialDay(db, argv, "syg")
+}
+func AddHelligdag(db *model.Repository, argv Argv) {
+	addSpecialDay(db, argv, "helligdag")
+}
+func AddFerie(db *model.Repository, argv Argv) {
+	addSpecialDay(db, argv, "ferie")
 }
