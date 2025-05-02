@@ -31,6 +31,11 @@ func ListDailyLog(db *model.Repository, argv Argv) {
 	words := strings.Split(argv.getArg(2, ""), " ")
 	date := chrono.ParseDate(words[0], time.Now())
 	entries := db.GetDailyLog(date)
+	if entries == nil && !chrono.IsWeekday(date) {
+		die("it's the weekend on " + chrono.Date(date).Iso())
+	} else if entries == nil {
+		die("no data for " + chrono.Date(date).Iso())
+	}
 	view := formatter.AgendaView(manipulation.Accumulate(entries, time.Now()))
 	println(view.Format(formatter.Ascending))
 }
@@ -38,6 +43,11 @@ func ListDailyLogDiff(db *model.Repository, argv Argv) {
 	words := strings.Split(argv.getArg(2, ""), " ")
 	date := chrono.ParseDate(words[0], time.Now())
 	entries := db.GetDailyLog(date)
+	if entries == nil && !chrono.IsWeekday(date) {
+		die("it's the weekend on " + chrono.Date(date).Iso())
+	} else if entries == nil {
+		die("no data for " + chrono.Date(date).Iso())
+	}
 	view := formatter.DurationView(manipulation.Aggregate(entries, time.Now()))
 	println(view.Format(formatter.Ascending))
 }

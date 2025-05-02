@@ -2,6 +2,7 @@ package verifier
 
 import (
 	"log"
+	"slices"
 	"time"
 	"wlog/chrono"
 	"wlog/model"
@@ -20,7 +21,7 @@ func (v Verifier) SixMonths() bool {
 	valid := true
 	log.SetFlags(0)
 	for start := now.AddDate(0, -6, 0); start.Before(now); start = start.AddDate(0, 0, 1) {
-		if !v.weekday(start) {
+		if !chrono.IsWeekday(start) {
 			continue
 		}
 		if !v.began(start) {
@@ -43,13 +44,10 @@ func (v Verifier) SixMonths() bool {
 	return valid
 }
 
-func (v Verifier) weekday(day time.Time) bool {
-	return day.Weekday() != time.Saturday && day.Weekday() != time.Sunday
-}
-func (v Verifier) hasEntry(day time.Time, title string) bool {
+func (v Verifier) hasEntry(day time.Time, titles... string) bool {
 	log := v.Repo.GetDailyLog(day)
 	for _, e := range log {
-		if e.TaskName == title {
+		if slices.Contains(titles, e.TaskName) {
 			return true
 		}
 	}
@@ -69,8 +67,8 @@ func (v Verifier) helligdag(day time.Time) bool {
 	return v.hasEntry(day, "helligdag")
 }
 func (v Verifier) ferie(day time.Time) bool {
-	return v.hasEntry(day, "ferie")
+	return v.hasEntry(day, "ferie", "juleferie")
 }
 func (v Verifier) sickday(day time.Time) bool {
-	return v.hasEntry(day, "syg")
+	return v.hasEntry(day, "syg", "bali belly")
 }

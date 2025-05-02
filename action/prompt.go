@@ -26,6 +26,6 @@ func warnOrDie(msg string) {
 }
 
 func die(msg string) {
-	print(msg)
+	println(msg)
 	os.Exit(1)
 }

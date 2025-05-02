@@ -10,6 +10,10 @@ import (
 	"github.com/wrigleyster/opt"
 )
 
+func IsWeekday(day time.Time) bool {
+	return day.Weekday() != time.Saturday && day.Weekday() != time.Sunday
+}
+
 type Date time.Time
 
 func (date Date) At(h int, m int) time.Time {
