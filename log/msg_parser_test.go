@@ -193,9 +193,9 @@ func TestRelativeDate2(t *testing.T) {
 func TestParseTaskId(t *testing.T) {
 	entry := Entry{time.Now(), "I want to work on SFFEAT001234", ""}
 
-	entry = entry.parseTaskId()
+	entry = entry.parseExtId()
 
-	assert.Equal(t, "SFFEAT001234", entry.TaskId)
+	assert.Equal(t, "SFFEAT001234", entry.ExtId)
 }
 
 func TestRelativeDateMonday(t *testing.T) {

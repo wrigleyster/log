@@ -6,14 +6,10 @@ import (
 	"time"
 	"wlog/chrono"
 	"wlog/list"
-
+	"wlog/model"
 )
 
-type Entry struct {
-	Time     time.Time
-	TaskName string
-	TaskId   string
-}
+type Entry model.LogEntry
 
 func NewLogEntry(input string) Entry {
 	return Entry{time.Now(), input, ""}
@@ -41,12 +37,12 @@ func (entry Entry) ParseTime() Entry {
 	return entry
 
 }
-func (entry Entry) parseTaskId() Entry {
+func (entry Entry) parseExtId() Entry {
 	words := strings.Split(entry.TaskName, " ")
 	for i, v := range words {
 		if strings.HasPrefix(v, "SFFEAT") ||
 			strings.HasPrefix(v, "SFSTRY") {
-			entry.TaskId = v
+			entry.ExtId = v
 			entry.TaskName = strings.Join(append(words[:i], words[i+1:]...), " ")
 			break
 		}
@@ -82,7 +78,7 @@ func (entry Entry) IsEOD() bool {
 }
 
 func (entry Entry) Str() string {
-	return fmt.Sprintf("Entry(%s,%s,%s)", entry.Time.String(), entry.TaskName, entry.TaskId)
+	return fmt.Sprintf("Entry(%s,%s,%s)", entry.Time.String(), entry.TaskName, entry.ExtId)
 }
 
 func Parse(argv []string) Entry {
@@ -91,7 +87,7 @@ func Parse(argv []string) Entry {
 		parseDate().
 		parseFrontDate().
 		ParseTime().
-		parseTaskId()
+		parseExtId()
 	return entry
 }
 

@@ -5,7 +5,6 @@ import (
 	"time"
 	"wlog/chrono"
 	"wlog/list"
-	"wlog/log"
 
 	"github.com/google/uuid"
 	"github.com/wrigleyster/gorm"
@@ -35,6 +34,11 @@ type Task struct {
 type Entry struct {
 	Id, TaskId string
 	StartedAt  time.Time
+}
+type LogEntry struct {
+	Time     time.Time
+	TaskName string
+	ExtId    string
 }
 
 func (task Task) fields() []any {
@@ -69,10 +73,10 @@ func (repo Repository) SaveEntry(entry *Entry) {
 	repo.db.From("entry").
 		Replace(entry.fields()...)
 }
-func (repo Repository) Save(entry log.Entry) {
+func (repo Repository) Save(entry LogEntry) {
 
 	res := repo.db.From("task").
-		Where("extId = ? or taskName = ?", entry.TaskId, entry.TaskName).
+		Where("extId = ? or taskName = ?", entry.ExtId, entry.TaskName).
 		Select("id")
 	var taskid string
 	if res.Next() {
@@ -87,7 +91,7 @@ func (repo Repository) Save(entry log.Entry) {
 		taskid = uuid.NewString()
 	}
 
-	repo.db.From("task").Replace(taskid, entry.TaskId, entry.TaskName, "")
+	repo.db.From("task").Replace(taskid, entry.ExtId, entry.TaskName, "")
 	repo.db.From("entry").Replace(uuid.NewString(), taskid, entry.Time.String())
 
 }
@@ -133,16 +137,16 @@ func (repo Repository) entryBy(predicate string, value ...any) []Entry {
 	}
 	return entries
 }
-func (repo Repository) GetLogLines(count int) []log.Entry {
-	var entries []log.Entry
+func (repo Repository) GetLogLines(count int) []LogEntry {
+	var entries []LogEntry
 	repo.db.Orm(func(db *sql.DB) {
 		stmt, err := db.Prepare("SELECT startedAt, task.taskName, task.extId FROM task INNER JOIN entry ON task.id = entry.taskId ORDER BY entry.startedAt DESC limit ?")
 		util.Log(err)
 		row, err := stmt.Query(count)
 		util.Log(err)
 		for row.Next() {
-			entry := log.Entry{}
-			err = row.Scan(&entry.Time, &entry.TaskName, &entry.TaskId)
+			entry := LogEntry{}
+			err = row.Scan(&entry.Time, &entry.TaskName, &entry.ExtId)
 			util.Log(err)
 			entries = append(entries, entry)
 		}
@@ -150,17 +154,17 @@ func (repo Repository) GetLogLines(count int) []log.Entry {
 	list.Reverse(entries)
 	return entries
 }
-func (repo Repository) GetDailyLog(date time.Time) []log.Entry {
+func (repo Repository) GetDailyLog(date time.Time) []LogEntry {
 	date = chrono.Date(date).At(0, 0)
-	var entries []log.Entry
+	var entries []LogEntry
 	repo.db.Orm(func(db *sql.DB) {
 		stmt, err := db.Prepare("SELECT startedAt, task.taskName, task.extId FROM task INNER JOIN entry ON task.id = entry.taskId WHERE ? < startedAt and startedAt < ?")
 		util.Log(err)
 		row, err := stmt.Query(date, date.Add(time.Hour*24))
 		util.Log(err)
 		for row.Next() {
-			entry := log.Entry{}
-			err = row.Scan(&entry.Time, &entry.TaskName, &entry.TaskId)
+			entry := LogEntry{}
+			err = row.Scan(&entry.Time, &entry.TaskName, &entry.ExtId)
 			util.Log(err)
 			entries = append(entries, entry)
 		}

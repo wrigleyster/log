@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 	"wlog/chrono"
-	"wlog/log"
+	"wlog/model"
 )
 
 func TestAccumulateWithoutEOD(t *testing.T) {
 	date := chrono.Date(time.Now()).At(15, 00)
-	entries := []log.Entry{
+	entries := []model.LogEntry{
 		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
 		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
 		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
@@ -29,7 +29,7 @@ func TestAccumulateWithoutEOD(t *testing.T) {
 }
 func TestAccumulateWithEOD(t *testing.T) {
 	date := chrono.Date(time.Now()).At(15, 00)
-	entries := []log.Entry{
+	entries := []model.LogEntry{
 		{chrono.Date(date).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
 		{chrono.Date(date).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
 		{chrono.Date(date).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},
@@ -51,7 +51,7 @@ func TestAccumulateWithEOD(t *testing.T) {
 func TestAccumulateWithEodAndNewDay(t *testing.T) {
 	now := chrono.Date(time.Now()).At(15, 00)
 	yesterday := now.Add(-24 * time.Hour)
-	entries := []log.Entry{
+	entries := []model.LogEntry{
 		{chrono.Date(yesterday).At(9, 30), "Designing the timelogger", "SFFEAT0000001"},
 		{chrono.Date(yesterday).At(12, 00), "Implementing the timelogger", "SFFEAT0000002"},
 		{chrono.Date(yesterday).At(14, 30), "Testing the timelogger", "SFFEAT0000003"},

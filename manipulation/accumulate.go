@@ -7,6 +7,7 @@ import (
 	"time"
 	"wlog/chrono"
 	"wlog/log"
+	"wlog/model"
 )
 
 type Total []DayTotal
@@ -48,14 +49,14 @@ func getTaskTotal(task log.Entry, endTime time.Time, isOpen bool) TaskTotal {
 		task.Time,
 		chrono.GetDuration(task.Time, endTime),
 		task.TaskName,
-		task.TaskId,
+		task.ExtId,
 		isOpen,
 	}
 }
 func last[T any](slice []T) int {
 	return len(slice) - 1
 }
-func assertAscending(entries []log.Entry) {
+func assertAscending(entries []model.LogEntry) {
 	if len(entries) < 2 {
 		return
 	}
@@ -65,7 +66,7 @@ func assertAscending(entries []log.Entry) {
 	}
 	assertAscending(entries[1:])
 }
-func Accumulate(entries []log.Entry, now time.Time) Total {
+func Accumulate(entries []model.LogEntry, now time.Time) Total {
 	assertAscending(entries)
 	total, dayTotal := Total{}, DayTotal{}
 	var task TaskTotal
@@ -74,7 +75,7 @@ func Accumulate(entries []log.Entry, now time.Time) Total {
 		if i == 0 {
 			dayTotal = NewDayTotal(entry.Time)
 		}
-		task = getTaskTotal(entry, endTime, false)
+		task = getTaskTotal(log.Entry(entry), endTime, false)
 		dayTotal.Duration = dayTotal.Duration.Add(task.Duration)
 		dayTotal.Tasks = append(dayTotal.Tasks, task)
 
@@ -83,7 +84,7 @@ func Accumulate(entries []log.Entry, now time.Time) Total {
 			dayTotal = NewDayTotal(endTime)
 		}
 	}
-	task = getTaskTotal(entries[last(entries)], now, true)
+	task = getTaskTotal(log.Entry(entries[last(entries)]), now, true)
 	dayTotal.Duration = dayTotal.Duration.Add(task.Duration)
 	dayTotal.Tasks = append(dayTotal.Tasks, task)
 
@@ -114,7 +115,7 @@ func (a aggregate) add(task TaskTotal) {
 	}
 }
 
-func Aggregate(entries []log.Entry, now time.Time) Total {
+func Aggregate(entries []model.LogEntry, now time.Time) Total {
 	assertAscending(entries)
 	total, dayTotal := Total{}, DayTotal{}
 	aggregate := make(aggregate)
@@ -124,7 +125,7 @@ func Aggregate(entries []log.Entry, now time.Time) Total {
 		if i == 0 {
 			dayTotal = NewDayTotal(entry.Time)
 		}
-		task = getTaskTotal(entry, endTime, false)
+		task = getTaskTotal(log.Entry(entry), endTime, false)
 		aggregate.add(task)
 		dayTotal.Duration = dayTotal.Duration.Add(task.Duration)
 		if chrono.GetDay(entry.Time) != chrono.GetDay(endTime) {
@@ -134,7 +135,7 @@ func Aggregate(entries []log.Entry, now time.Time) Total {
 			aggregate = make(map[string]TaskTotal)
 		}
 	}
-	task = getTaskTotal(entries[last(entries)], now, true)
+	task = getTaskTotal(log.Entry(entries[last(entries)]), now, true)
 	aggregate.add(task)
 	dayTotal.Duration = dayTotal.Duration.Add(task.Duration)
 	dayTotal.Tasks = aggregate.asList()

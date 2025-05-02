@@ -18,12 +18,12 @@ func Add(db *model.Repository, argv Argv) {
 		warnOrDie("That event is in the future.")
 	}
 	println("add")
-	if msg.TaskId != "" {
-		if task := db.TaskByNameAndExtId(msg.TaskName, msg.TaskId); task.Exists {
+	if msg.ExtId != "" {
+		if task := db.TaskByNameAndExtId(msg.TaskName, msg.ExtId); task.Exists {
 			entry := model.Entry{TaskId: task.Value.Id, StartedAt: msg.Time}
 			db.SaveEntry(&entry)
 		} else {
-			task := model.Task{ExtId: msg.TaskId, TaskName: msg.TaskName}
+			task := model.Task{ExtId: msg.ExtId, TaskName: msg.TaskName}
 			db.SaveTask(&task)
 			entry := model.Entry{TaskId: task.Id, StartedAt: msg.Time}
 			db.SaveEntry(&entry)

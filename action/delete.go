@@ -25,8 +25,8 @@ func DeleteEntry(db *model.Repository, argv Argv) {
 		}
 	}
 	println("trying generic")
-	if msg.TaskId != "" {
-		task = db.TaskByNameAndExtId(msg.TaskName, msg.TaskId)
+	if msg.ExtId != "" {
+		task = db.TaskByNameAndExtId(msg.TaskName, msg.ExtId)
 	} else {
 		task = opt.First(db.TasksByName(msg.TaskName)) // TODO pick in sort order
 	}

@@ -5,7 +5,6 @@ import (
 	"os"
 	"testing"
 	"time"
-	"wlog/log"
 	"wlog/model"
 
 	"github.com/stretchr/testify/assert"
@@ -49,14 +48,14 @@ func TestBegun(t *testing.T) {
 	monday := time.Date(2025, time.January, 6, 1, 1, 1, 1, time.UTC)
 
 	assert.False(t, v.began(monday))
-	v.Repo.Save(log.Entry{Time: monday, TaskName: "Designing the timelogger", TaskId: "SFFEAT0000001"})
+	v.Repo.Save(model.LogEntry{Time: monday, TaskName: "Designing the timelogger", ExtId: "SFFEAT0000001"})
 	assert.True(t, v.began(monday))
 
 	assert.False(t, v.lunch(monday))
-	v.Repo.Save(log.Entry{Time: monday.Add(12 * time.Hour), TaskName: "lunch", TaskId: ""})
+	v.Repo.Save(model.LogEntry{Time: monday.Add(12 * time.Hour), TaskName: "lunch", ExtId: ""})
 	assert.True(t, v.lunch(monday))
 
 	assert.False(t, v.eod(monday))
-	v.Repo.Save(log.Entry{Time: monday.Add(14 * time.Hour), TaskName: "eod", TaskId: ""})
+	v.Repo.Save(model.LogEntry{Time: monday.Add(14 * time.Hour), TaskName: "eod", ExtId: ""})
 	assert.True(t, v.eod(monday))
 }
