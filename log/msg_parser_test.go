@@ -227,7 +227,7 @@ func TestFrontDate(t *testing.T) {
 	entry := Entry{time.Now(), "2023.5.22 10:54 ducks are winners", ""}
 
 	entry = entry.parseFrontDate()
-	
+
 	assert.Equal(t, monday.Day(), entry.Time.Day())
 	assert.Equal(t, monday.Month(), entry.Time.Month())
 	assert.Equal(t, monday.Year(), entry.Time.Year())
@@ -236,11 +236,10 @@ func TestFrontDate(t *testing.T) {
 }
 func TestFrontTime(t *testing.T) {
 	monday := time.Date(2023, 5, 22, 10, 54, 0, 0, time.Local)
-	entry := Entry{chrono.Date(monday).At(0,0), "10:54 ducks are winners", ""}
-	
+	entry := Entry{chrono.Date(monday).At(0, 0), "10:54 ducks are winners", ""}
 
 	entry = entry.ParseTime()
-	
+
 	assert.Equal(t, monday.Hour(), entry.Time.Hour())
 	assert.Equal(t, monday.Minute(), entry.Time.Minute())
 	assert.Equal(t, monday.Location(), entry.Time.Location())

@@ -18,7 +18,7 @@ func NewLogEntry(input string) Entry {
 func (entry Entry) ParseTime() Entry {
 	now := entry.Time.Truncate(time.Minute)
 	words := strings.Split(entry.TaskName, " ")
-	if len(words) > 1 && strings.Contains(words[0], ":") && !strings.HasSuffix(words[0], ":"){
+	if len(words) > 1 && strings.Contains(words[0], ":") && !strings.HasSuffix(words[0], ":") {
 		startTime := chrono.ParseOptionalTime(words[0], entry.Time)
 		if !startTime.Exists {
 			return entry

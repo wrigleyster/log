@@ -108,7 +108,7 @@ func (a aggregate) add(task TaskTotal) {
 	if t, present := a[task.Str()]; present {
 		t.Duration = t.Duration.Add(task.Duration)
 		t.StartedAt = task.StartedAt
-        t.IsOpen = t.IsOpen || task.IsOpen
+		t.IsOpen = t.IsOpen || task.IsOpen
 		a[task.Str()] = t
 	} else {
 		a[task.Str()] = task
