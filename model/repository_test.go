@@ -15,7 +15,8 @@ func TestSaveAndRecover(t *testing.T) {
 		err := os.Remove(dbname)
 		util.Log(err)
 	})
-	repo := Seed(dbname)
+	repo := SqLite(dbname)
+	repo.Seed()
 
 	entry := Entry{
 		Id:        "",
@@ -35,7 +36,8 @@ func TestCleanupChildlessParents(t *testing.T) {
 		err := os.Remove(dbname)
 		util.Log(err)
 	})
-	repo := Seed(dbname)
+	repo := SqLite(dbname)
+	repo.Seed()
 
 	task := Task{
 		Id:       "",
@@ -66,7 +68,8 @@ func TestEntryByTimestamp(t *testing.T) {
 		err := os.Remove(dbname)
 		util.Log(err)
 	})
-	repo := Seed(dbname)
+	repo := SqLite(dbname)
+	repo.Seed()
 	task := Task{
 		Id:       "",
 		TaskName: "A",

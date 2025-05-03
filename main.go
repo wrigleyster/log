@@ -2,14 +2,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/wrigleyster/opt"
 	"os"
-	"wlog/action"
+	"wlog/config"
 	"wlog/model"
+
+	"github.com/wrigleyster/opt"
+	"wlog/action"
 )
 
 func getDb() model.Repository {
-	db := model.Seed("sqlite.db")
+	db := model.Local(config.GetDb())
+	db.Seed()
 	db.CleanChildlessParents()
 	return db
 }

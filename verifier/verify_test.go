@@ -16,7 +16,8 @@ func TestBegun(t *testing.T) {
 		err := os.Remove(dbname)
 		util.Log(err)
 	})
-	repo := model.Seed(dbname)
+	repo := model.SqLite(dbname)
+	repo.Seed()
 	monday := time.Date(2025, time.January, 6, 1, 1, 1, 1, time.UTC)
 	v := New(&repo, monday)
 
