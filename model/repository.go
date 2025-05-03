@@ -37,6 +37,17 @@ func (repo *Repository) Seed() {
 		CreateTable("entry")
 }
 
+type Table interface {
+	id() string
+	setId(string)
+	fields() []any
+	tableName() string
+}
+type Factory[T any] interface {
+	Make(row *sql.Rows) T
+	Table() string
+}
+
 type Task struct {
 	Id, ExtId, TaskName, State string
 }
@@ -56,17 +67,48 @@ func (task Task) fields() []any {
 func (entry Entry) fields() []any {
 	return []any{entry.Id, entry.TaskId, entry.StartedAt}
 }
-func makeTask(row *sql.Rows) Task {
+func (Task) tableName() string {
+	return TaskFactory{}.Table()
+}
+func (Entry) tableName() string {
+	return EntryFactory{}.Table()
+}
+
+type EntryFactory struct{}
+
+func (EntryFactory) Table() string {
+	return "entry"
+}
+func (EntryFactory) Make(row *sql.Rows) Entry {
+	var entry Entry
+	err := row.Scan(&entry.Id, &entry.TaskId, &entry.StartedAt)
+	util.Log(err)
+	return entry
+}
+
+type TaskFactory struct{}
+
+func (TaskFactory) Table() string {
+	return "task"
+}
+func (TaskFactory) Make(row *sql.Rows) Task {
 	var task Task
 	err := row.Scan(&task.Id, &task.ExtId, &task.TaskName, &task.State)
 	util.Log(err)
 	return task
 }
+func makeTask(row *sql.Rows) Task {
+	return TaskFactory{}.Make(row)
+}
 func makeEntry(row *sql.Rows) Entry {
-	var entry Entry
-	err := row.Scan(&entry.Id, &entry.TaskId, &entry.StartedAt)
-	util.Log(err)
-	return entry
+	return EntryFactory{}.Make(row)
+}
+func (repo *Repository) save(table Table) {
+	if table.id() == "" {
+		table.setId(uuid.NewString())
+	}
+	repo.db.From(table.tableName()).
+		Replace(table.fields()...)
 }
 func (repo *Repository) SaveTask(task *Task) {
 	if task.Id == "" {
@@ -125,26 +167,22 @@ func (repo *Repository) EntryByTimestamp(startedAt time.Time) opt.Maybe[Entry] {
 func (repo *Repository) EntriesByTaskId(taskId string) []Entry {
 	return repo.entryBy("taskId = ?", taskId)
 }
-
-func (repo *Repository) taskBy(predicate string, value ...any) []Task {
-	res := repo.db.From("task").
-		Where(predicate, value...).
+func findBy[T any](repo *Repository, factory Factory[T], predicate string, predicateValues ...any) []T {
+	res := repo.db.From(factory.Table()).
+		Where(predicate, predicateValues...).
 		Select()
-	var tasks []Task
+	defer res.Close()
+	var entries []T
 	for res.Next() {
-		tasks = append(tasks, makeTask(res))
-	}
-	return tasks
-}
-func (repo *Repository) entryBy(predicate string, value ...any) []Entry {
-	res := repo.db.From("entry").
-		Where(predicate, value...).
-		Select()
-	var entries []Entry
-	for res.Next() {
-		entries = append(entries, makeEntry(res))
+		entries = append(entries, factory.Make(res))
 	}
 	return entries
+}
+func (repo *Repository) taskBy(predicate string, values ...any) []Task {
+	return findBy(repo, TaskFactory{}, predicate, values...)
+}
+func (repo *Repository) entryBy(predicate string, values ...any) []Entry {
+	return findBy(repo, EntryFactory{}, predicate, values...)
 }
 func (repo *Repository) GetLogLines(count int) []LogEntry {
 	var entries []LogEntry
@@ -164,20 +202,19 @@ func (repo *Repository) GetLogLines(count int) []LogEntry {
 	return entries
 }
 func (repo *Repository) GetDailyLog(date time.Time) []LogEntry {
-	date = chrono.Date(date).At(0, 0)
 	var entries []LogEntry
-	repo.db.Orm(func(db *sql.DB) {
-		stmt, err := db.Prepare("SELECT startedAt, task.taskName, task.extId FROM task INNER JOIN entry ON task.id = entry.taskId WHERE ? < startedAt and startedAt < ?")
-		util.Log(err)
-		row, err := stmt.Query(date, date.Add(time.Hour*24))
-		util.Log(err)
-		for row.Next() {
+	date = chrono.Date(date).At(0, 0)
+	row := repo.db.From("task").
+		InnerJoin("entry e", "task.id = e.taskId").
+		Where("? < e.startedAt and e.startedAt < ?", date, date.AddDate(0,0,1)).
+		Select("e.startedAt", "task.taskName", "task.extId")
+	defer row.Close()
+	for row.Next() {
 			entry := LogEntry{}
-			err = row.Scan(&entry.Time, &entry.TaskName, &entry.ExtId)
+			err := row.Scan(&entry.Time, &entry.TaskName, &entry.ExtId)
 			util.Log(err)
 			entries = append(entries, entry)
-		}
-	})
+	}
 	return entries
 }
 func (repo *Repository) GetTasks(count int) []Task {
