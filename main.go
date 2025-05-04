@@ -32,6 +32,8 @@ func parseArgs(argv action.Argv) (func(db *model.Repository, argv action.Argv), 
 		return action.ListLogDiff, os.Args
 	} else if argv[0] == "-ll" {
 		return action.ListDailyLog, os.Args
+	} else if argv[0] == "-llc" {
+		return action.ListDailyLogContext, os.Args
 	} else if argv[0] == "-lld" {
 		return action.ListDailyLogDiff, os.Args
 	} else if argv[0] == "-lt" {

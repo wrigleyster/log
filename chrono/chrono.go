@@ -14,6 +14,21 @@ func IsWeekday(day time.Time) bool {
 	return day.Weekday() != time.Saturday && day.Weekday() != time.Sunday
 }
 
+func PreviousWorkday(day time.Time) time.Time {
+	day = day.AddDate(0, 0, -1)
+	for !IsWeekday(day) {
+		day = day.AddDate(0, 0, -1)
+	}
+	return day
+}
+func NextWorkday(day time.Time) time.Time {
+	day = day.AddDate(0, 0, 1)
+	for !IsWeekday(day) {
+		day = day.AddDate(0, 0, 1)
+	}
+	return day
+}
+
 type Date time.Time
 
 func (date Date) At(h int, m int) time.Time {
