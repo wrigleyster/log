@@ -6,6 +6,8 @@ import (
 	"os"
 	"wlog/action"
 	"wlog/model"
+	"wlog/serve"
+ 
 )
 
 func getDb() model.Repository {
@@ -41,6 +43,8 @@ func parseArgs(argv action.Argv) (func(db *model.Repository, argv action.Argv), 
 		return action.Verify, os.Args
 	} else if argv[0] == "-h" {
 		return printUsage, os.Args
+	} else if argv[0] == "serve" {
+		return action.Serve, action.Argv{}
 	} else if argv[0] == os.Args[0] {
 		return printUsage, os.Args
 	} else if argv[0] == "-af" {
