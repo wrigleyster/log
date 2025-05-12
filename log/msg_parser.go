@@ -52,7 +52,7 @@ func (entry Entry) parseExtId() Entry {
 	return entry
 }
 
-func (entry Entry) parseDate() Entry {
+func (entry Entry) parseDatePostfix() Entry {
 	words := strings.Split(entry.TaskName, " ")
 	newDate := chrono.RelativeDate(entry.Time, list.El(words, -1))
 	if newDate == entry.Time {
@@ -63,7 +63,7 @@ func (entry Entry) parseDate() Entry {
 	return entry
 }
 
-func (entry Entry) parseFrontDate() Entry {
+func (entry Entry) parseDatePrefix() Entry {
 	words := strings.Split(entry.TaskName, " ")
 	newDate := chrono.ParseDate(words[0], entry.Time)
 	if newDate == entry.Time {
@@ -81,12 +81,14 @@ func (entry Entry) IsEOD() bool {
 func (entry Entry) Str() string {
 	return fmt.Sprintf("Entry(%s,%s,%s)", entry.Time.String(), entry.TaskName, entry.ExtId)
 }
+func (entry Entry) ParseDate() Entry {
+	return entry.parseDatePostfix().parseDatePrefix()
+}
 
 func Parse(argv []string) Entry {
 	input := strings.Join(argv, " ")
 	entry := NewLogEntry(input).
-		parseDate().
-		parseFrontDate().
+		ParseDate().
 		ParseTime().
 		parseExtId()
 	return entry

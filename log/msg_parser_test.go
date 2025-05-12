@@ -19,12 +19,11 @@ func TestParseTime(t *testing.T) {
 	assert.Equal(t, time.Now().Day(), entry.Time.Day())
 }
 
-func TestParseDateTime(t *testing.T) {
+func TestParseDateTimePostfix(t *testing.T) {
 	friday := time.Date(2023, 6, 2, 16, 45, 0, 0, time.Local)
 	today := time.Date(2023, 6, 5, 8, 17, 0, 0, time.Local)
 	entry := Entry{today, "eod at 16:45 friday", ""}.
-		parseDate().
-		parseFrontDate().
+		ParseDate().
 		ParseTime()
 
 	assert.Equal(t, "eod", entry.TaskName)
@@ -35,12 +34,11 @@ func TestParseDateTime(t *testing.T) {
 	assert.Equal(t, friday.Month(), entry.Time.Month())
 	assert.Equal(t, friday.Day(), entry.Time.Day())
 }
-func TestParseFrontDateTime(t *testing.T) {
+func TestParseDateTimePrefix(t *testing.T) {
 	friday := time.Date(2023, 6, 2, 16, 45, 0, 0, time.Local)
 	today := time.Date(2023, 6, 5, 8, 17, 0, 0, time.Local)
 	entry := Entry{today, "friday 16:45 eod", ""}.
-		parseDate().
-		parseFrontDate().
+		ParseDate().
 		ParseTime()
 
 	assert.Equal(t, "eod", entry.TaskName)
@@ -51,12 +49,11 @@ func TestParseFrontDateTime(t *testing.T) {
 	assert.Equal(t, friday.Month(), entry.Time.Month())
 	assert.Equal(t, friday.Day(), entry.Time.Day())
 }
-func TestParseFullFrontDateTime(t *testing.T) {
+func TestParseFullDateTimePrefix(t *testing.T) {
 	friday := time.Date(2023, 6, 2, 16, 45, 0, 0, time.Local)
 	today := time.Date(2023, 6, 5, 8, 17, 0, 0, time.Local)
 	entry := Entry{today, "2023.6.2 16:45 eod", ""}.
-		parseDate().
-		parseFrontDate().
+		ParseDate().
 		ParseTime()
 
 	assert.Equal(t, "eod", entry.TaskName)
@@ -79,8 +76,7 @@ func TestRelativeDateTime(t *testing.T) {
 
 func TestParseDate_yesterday(t *testing.T) {
 	entry := NewLogEntry("working on cool stuff at 8:40 yesterday").
-		parseDate().
-		parseFrontDate().
+		ParseDate().
 		ParseTime()
 
 	yesterday := time.Now().AddDate(0, 0, -1)
@@ -94,8 +90,7 @@ func TestParseDate_yesterday(t *testing.T) {
 
 func TestParseDate_y(t *testing.T) {
 	entry := NewLogEntry("working on cool stuff at 8:40 y").
-		parseDate().
-		parseFrontDate().
+		ParseDate().
 		ParseTime()
 
 	yesterday := time.Now().AddDate(0, 0, -1)
@@ -109,8 +104,7 @@ func TestParseDate_y(t *testing.T) {
 
 func TestParseDate_monday(t *testing.T) {
 	entry := NewLogEntry("working on cool stuff at 8:40 monday").
-		parseDate().
-		parseFrontDate().
+		ParseDate().
 		ParseTime()
 
 	monday := time.Now().Truncate(time.Hour * 24 * 7)
@@ -222,11 +216,11 @@ func TestAbsoluteDate(t *testing.T) {
 	assert.Equal(t, "Monday", monday.Weekday().String())
 	assert.Equal(t, chrono.Day(monday), chrono.Day(chrono.AbsoluteDate(monday, "2023.5.22")))
 }
-func TestFrontDate(t *testing.T) {
+func TestParseDatePrefix(t *testing.T) {
 	monday := time.Date(2023, 5, 22, 10, 54, 0, 0, time.Local)
 	entry := Entry{time.Now(), "2023.5.22 10:54 ducks are winners", ""}
 
-	entry = entry.parseFrontDate()
+	entry = entry.parseDatePrefix()
 
 	assert.Equal(t, monday.Day(), entry.Time.Day())
 	assert.Equal(t, monday.Month(), entry.Time.Month())
@@ -234,7 +228,7 @@ func TestFrontDate(t *testing.T) {
 	assert.Equal(t, monday.YearDay(), entry.Time.YearDay())
 	assert.Equal(t, "10:54 ducks are winners", entry.TaskName)
 }
-func TestFrontTime(t *testing.T) {
+func TestTimePrefix(t *testing.T) {
 	monday := time.Date(2023, 5, 22, 10, 54, 0, 0, time.Local)
 	entry := Entry{chrono.Date(monday).At(0, 0), "10:54 ducks are winners", ""}
 
