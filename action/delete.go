@@ -9,7 +9,8 @@ import (
 )
 
 func UsageDelete(argv Argv) {
-	fmt.Printf("%s: -dd [SFFEAT] worked on x at 9:30 [yesterday|monday-friday]\n", argv[0])
+	fmt.Println("Delete")
+	fmt.Printf("\t%s: -dd [SFFEAT] worked on x at 9:30 [yesterday|monday-friday]\n", argv[0])
 }
 
 func DeleteEntry(db *model.Repository, argv Argv) {

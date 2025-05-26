@@ -22,9 +22,11 @@ func printUsage(_ *model.Repository, argv action.Argv) {
 	action.UsageDelete(argv)
 	action.UsageList(argv)
 	action.UsageSetId(argv)
-	fmt.Printf("%s: -h\n", argv[0])
+	fmt.Println("Help")
+	fmt.Printf("\t%s: -h\n", argv[0])
 	os.Exit(1)
 }
+
 func parseArgs(argv action.Argv) (func(db *model.Repository, argv action.Argv), action.Argv) {
 	if len(argv) == 0 || argv[0] == "-l" {
 		return action.ListLog, os.Args

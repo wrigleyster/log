@@ -8,7 +8,8 @@ import (
 )
 
 func UsageSetId(argv Argv) {
-	fmt.Printf("%s: -s SFFEAT = worked on x [at 9:30] [yesterday|monday-friday]\n", argv[0])
+	fmt.Println("Set")
+	fmt.Printf("\t%s: -s SFFEAT = worked on x [at 9:30] [yesterday|monday-friday]\n", argv[0])
 }
 
 func SetId(db *model.Repository, argv Argv) {

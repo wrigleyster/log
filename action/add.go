@@ -10,7 +10,10 @@ import (
 )
 
 func UsageAdd(argv Argv) {
-	fmt.Printf("%s: [SFFEAT] working on x [at 9:30] [yesterday|monday-friday]\n", argv[0])
+	fmt.Println("Add")
+	fmt.Printf("\t%s: [SFFEAT] working on x [at 9:30] [yesterday|monday-friday]\n", argv[0])
+	fmt.Printf("\t%s: [date] [time] [SFFEAT] working on x\n", argv[0])
+	fmt.Printf("\t%s: -a<s|h|f> <time>\t # add sygdom/helligdag/ferie\n", argv[0])
 }
 
 func Add(db *model.Repository, argv Argv) {

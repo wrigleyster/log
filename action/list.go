@@ -12,8 +12,9 @@ import (
 )
 
 func UsageList(argv Argv) {
-	fmt.Printf("%s: -l[d|t] [count]\n", argv[0])
-	fmt.Printf("%s: -ll[d] [count]\n", argv[0])
+	fmt.Println("List")
+	fmt.Printf("\t%s: -l[d|t] [count]\n", argv[0])
+	fmt.Printf("\t%s: -ll[d|c] [count]\n", argv[0])
 }
 
 func ListLog(db *model.Repository, argv Argv) {
