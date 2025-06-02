@@ -21,6 +21,7 @@ func printUsage(_ *model.Repository, argv action.Argv) {
 	action.UsageAdd(argv)
 	action.UsageDelete(argv)
 	action.UsageList(argv)
+	action.UsageVerify(argv)
 	action.UsageSetId(argv)
 	fmt.Println("Help")
 	fmt.Printf("\t%s: -h\n", argv[0])
@@ -56,6 +57,8 @@ func parseArgs(argv action.Argv) (func(db *model.Repository, argv action.Argv), 
 		return action.AddHelligdag, os.Args[2:]
 	} else if argv[0] == "-as" {
 		return action.AddSickDay, os.Args[2:]
+	} else if argv[0] == "-cc" {
+		return action.Verify, os.Args
 	} else {
 		return action.Add, os.Args[1:]
 	}
