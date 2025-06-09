@@ -44,7 +44,7 @@ func parseArgs(argv action.Argv) (func(db *model.Repository, argv action.Argv), 
 	} else if argv[0] == "-s" {
 		return action.SetId, os.Args[1:]
 	} else if argv[0] == "-dd" {
-		return action.DeleteEntry, os.Args[1:]
+		return action.DeleteEntry, os.Args[2:]
 	} else if argv[0] == "-x" {
 		return action.Verify, os.Args
 	} else if argv[0] == "-h" {
